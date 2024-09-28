@@ -1,20 +1,27 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { computed, defineComponent } from 'vue';
 import TaskBar from './components/task-bar.vue';
+import SignIn from './components/sign-in.vue';
+import { useUserStore } from './stores/user-store.ts';
 
 export default defineComponent({
   name: 'App',
-  components: { TaskBar },
+  components: { TaskBar, SignIn },
   setup() {
-    return {};
+    const userStore = useUserStore();
+    const signedIn = computed<boolean>(() => !!userStore.user);
+    return { signedIn };
   },
 });
 </script>
 
 <template>
   <div class="app">
-    <div class="body"></div>
-    <task-bar />
+    <div v-if="signedIn" class="signed-in">
+      <div class="body"></div>
+      <task-bar />
+    </div>
+    <sign-in v-else />
   </div>
 </template>
 
@@ -44,11 +51,16 @@ body {
   --taskBarHeight: 70px;
   --taskBarColor: black;
 
-  .body {
-    z-index: 0;
-    width: 100%;
+  .signed-in {
     height: 100%;
-    max-height: calc(100% - var(--taskBarHeight));
+    width: 100%;
+
+    .body {
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      max-height: calc(100% - var(--taskBarHeight));
+    }
   }
 }
 </style>
