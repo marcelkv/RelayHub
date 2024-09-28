@@ -1,18 +1,25 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { usePageStore } from '../stores/page-store.ts';
 
 export default defineComponent({
   name: 'task-bar',
   setup() {
-    return {};
+    const pageStore = usePageStore();
+
+    function selectPage(page: string): void {
+      pageStore.setPage(page);
+    }
+
+    return { selectPage };
   },
 });
 </script>
 
 <template>
   <div class="task-bar">
-    <div class="task">Schedule</div>
-    <div class="task">Manual</div>
+    <div class="task" v-on:click="selectPage('schedules')">Schedules</div>
+    <div class="task" v-on:click="selectPage('relays')">Relays</div>
   </div>
 </template>
 
@@ -27,6 +34,7 @@ export default defineComponent({
   justify-content: space-around;
   align-items: center;
   border-top: 1px solid dimgrey;
+  outline: none;
 
   .task {
     color: white;
@@ -42,6 +50,10 @@ export default defineComponent({
     &:hover {
       border-color: rgba(255, 255, 255, 0.3);
       background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &:focus {
+      outline: none;
     }
   }
 }

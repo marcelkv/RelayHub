@@ -2,15 +2,21 @@
 import { computed, defineComponent } from 'vue';
 import TaskBar from './components/task-bar.vue';
 import SignIn from './components/sign-in.vue';
+import Relays from './pages/relays.vue';
+import Schedules from './components/schedules.vue';
 import { useUserStore } from './stores/user-store.ts';
+import { usePageStore } from './stores/page-store.ts';
 
 export default defineComponent({
   name: 'App',
-  components: { TaskBar, SignIn },
+  components: { Schedules, Relays, TaskBar, SignIn },
   setup() {
     const userStore = useUserStore();
+    const pageStore = usePageStore();
+
     const signedIn = computed<boolean>(() => !!userStore.user);
-    return { signedIn };
+
+    return { signedIn, pageStore };
   },
 });
 </script>
@@ -18,7 +24,10 @@ export default defineComponent({
 <template>
   <div class="app">
     <div v-if="signedIn" class="signed-in">
-      <div class="body"></div>
+      <div class="body">
+        <relays v-if="pageStore.currentPage === 'relays'" />
+        <schedules v-else-if="pageStore.currentPage === 'schedules'" />
+      </div>
       <task-bar />
     </div>
     <sign-in v-else />
