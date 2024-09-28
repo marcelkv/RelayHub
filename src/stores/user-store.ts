@@ -1,10 +1,17 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-export const useUserStore = defineStore('user', () => {
-  const user = ref(null); // Reactive user state
+type User = {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoURL?: string | null;
+};
 
-  const setUser = newUser => {
+export const useUserStore = defineStore('user', () => {
+  const user = ref<User | null>(null);
+
+  const setUser = (newUser: User | null) => {
     user.value = newUser;
   };
 

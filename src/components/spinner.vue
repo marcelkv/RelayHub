@@ -1,12 +1,7 @@
-<template>
-  <div class="spinner">
-    <div class="spinner-inner" :style="{ '--spinnerSize': spinnerSize }"></div>
-    <div v-if="withText" class="text">Laden...</div>
-  </div>
-</template>
+<script lang="ts">
+import { defineComponent } from 'vue';
 
-<script>
-export default {
+export default defineComponent({
   props: {
     spinnerSize: {
       type: String,
@@ -17,8 +12,18 @@ export default {
       default: false,
     },
   },
-};
+  setup() {
+    return {};
+  },
+});
 </script>
+
+<template>
+  <div class="spinner">
+    <div class="spinner-inner" :style="{ '--spinnerSize': spinnerSize }"></div>
+    <div v-if="withText" class="text">Laden...</div>
+  </div>
+</template>
 
 <style scoped>
 .spinner {

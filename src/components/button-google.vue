@@ -16,7 +16,12 @@ export default defineComponent({
       isLoading.value = true;
       try {
         const user = await signInWithGoogle();
-        userStore.setUser(user);
+        userStore.setUser({
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photoURL: user.photoURL,
+        });
       } catch (error) {
         userStore.setUser(null);
         console.error('Failed to sign in:', error);
