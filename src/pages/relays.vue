@@ -3,11 +3,12 @@ import { defineComponent, onMounted, ref } from 'vue';
 import PageTitle from '../components/page-title.vue';
 import Spinner from '../components/spinner.vue';
 import Relay from '../components/relay.vue';
-import { useRelayStore } from '../stores/relay-store.ts';
 import ButtonDefault from '../components/button-default.vue';
+import SwipeableListItem from '../components/swipeable-list-item.vue';
+import { useRelayStore } from '../stores/relay-store.ts';
 
 export default defineComponent({
-  components: { ButtonDefault, Relay, Spinner, PageTitle },
+  components: { SwipeableListItem, ButtonDefault, Relay, Spinner, PageTitle },
   setup() {
     const relayStore = useRelayStore();
     const isAddingNewRelay = ref(false);
@@ -23,7 +24,13 @@ export default defineComponent({
       nameError.value = '';
     }
 
-    const saveNewRelay = async () => {
+    function requestEdit(): void {}
+
+    async function requestDelete(id: string): Promise<void> {
+      await relayStore.deleteRelay(id);
+    }
+
+    async function saveNewRelay(): Promise<void> {
       if (!(await validateName())) {
         return;
       }
@@ -34,14 +41,14 @@ export default defineComponent({
       });
       newRelayName.value = '';
       isAddingNewRelay.value = false;
-    };
+    }
 
     const cancelAddingRelay = () => {
       isAddingNewRelay.value = false;
       newRelayName.value = '';
     };
 
-    const validateName = async (): Promise<boolean> => {
+    async function validateName(): Promise<void> {
       if (newRelayName.value.trim().length < 2) {
         nameError.value = 'Relay name must be at least 2 characters long.';
         return false;
@@ -57,7 +64,7 @@ export default defineComponent({
 
       nameError.value = '';
       return true;
-    };
+    }
 
     return {
       relayStore,
@@ -67,6 +74,8 @@ export default defineComponent({
       startAddingRelay,
       saveNewRelay,
       cancelAddingRelay,
+      requestEdit,
+      requestDelete,
     };
   },
 });
@@ -81,11 +90,13 @@ export default defineComponent({
       v-bind:with-text="true"
     />
     <div v-if="!relayStore.loading && !relayStore.error">
-      <relay
+      <swipeable-list-item
         v-for="relay in relayStore.relays"
-        v-bind:key="relay.id"
-        v-bind:relay="relay"
-      />
+        v-on:leftAction="requestEdit(relay.id)"
+        v-on:rightAction="requestDelete(relay.id)"
+      >
+        <relay v-bind:key="relay.id" v-bind:relay="relay" />
+      </swipeable-list-item>
     </div>
     <button-default
       v-if="!isAddingNewRelay"

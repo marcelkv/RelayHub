@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Relay } from '../types/relay';
 import {
   addRelayToDB,
+  deleteRelayFromDB,
   fetchRelays,
   isRelayNameUniqueInDB,
   updateRelayState,
@@ -56,6 +57,15 @@ export const useRelayStore = defineStore('relay', () => {
     }
   };
 
+  const deleteRelay = async (id: string) => {
+    try {
+      await deleteRelayFromDB(id);
+      relays.value = relays.value.filter(relay => relay.id !== id); // Remove relay from local state
+    } catch (err) {
+      console.error('Failed to delete relay:', err);
+    }
+  };
+
   return {
     relays,
     loading,
@@ -64,5 +74,6 @@ export const useRelayStore = defineStore('relay', () => {
     updateRelay,
     addRelay,
     isRelayNameUnique,
+    deleteRelay,
   };
 });

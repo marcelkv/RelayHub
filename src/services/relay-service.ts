@@ -2,6 +2,7 @@ import {
   getFirestore,
   collection,
   getDocs,
+  deleteDoc,
   query,
   where,
   addDoc,
@@ -64,6 +65,18 @@ export async function addRelayToDB(newRelay: Partial<Relay>): Promise<Relay> {
 
   const docRef = await addDoc(relaysCollection, relayWithUID);
   return { id: docRef.id, ...relayWithUID } as Relay;
+}
+
+export async function deleteRelayFromDB(id: string): Promise<void> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const relayDoc = doc(db, 'relays', id);
+  await deleteDoc(relayDoc);
 }
 
 export async function isRelayNameUniqueInDB(name: string): Promise<boolean> {
