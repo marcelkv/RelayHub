@@ -8,6 +8,7 @@ import {
   isRelayNameUniqueInDB,
   updateRelayStateFromDB,
   updateRelayConfigFromDB,
+  fetchRelay,
 } from '../services/relay-service.ts';
 
 export const useRelayStore = defineStore('relay', () => {
@@ -25,6 +26,20 @@ export const useRelayStore = defineStore('relay', () => {
       console.error(err);
     } finally {
       loading.value = false;
+    }
+  };
+
+  const refreshRelay = async (id: string) => {
+    try {
+      const updatedRelay = await fetchRelay(id);
+      const relayIndex = relays.value.findIndex(relay => relay.id === id);
+      if (relayIndex !== -1) {
+        relays.value[relayIndex] = updatedRelay;
+      } else {
+        console.warn('Relay not found in local state:', id);
+      }
+    } catch (err) {
+      console.error('Failed to refresh relay:', err);
     }
   };
 
@@ -115,5 +130,7 @@ export const useRelayStore = defineStore('relay', () => {
     isRelayNameUnique,
     deleteRelay,
     getMaxOnTime,
+    secondsToHHMMSS,
+    refreshRelay,
   };
 });

@@ -8,6 +8,8 @@ import {
   addDoc,
   updateDoc,
   doc,
+  getDoc,
+  Timestamp,
 } from 'firebase/firestore';
 import { Relay } from '../types/relay';
 import app from '../../firebaseConfig.ts';
@@ -25,7 +27,7 @@ export async function fetchRelays(): Promise<Relay[]> {
   }
 
   const relaysCollection = collection(db, 'relays');
-  const q = query(relaysCollection, where('uid', '==', user.uid)); // Fetch relays only for the current user
+  const q = query(relaysCollection, where('uid', '==', user.uid));
   const querySnapshot = await getDocs(q);
 
   return querySnapshot.docs.map(doc => {
@@ -41,6 +43,33 @@ export async function fetchRelays(): Promise<Relay[]> {
   });
 }
 
+export async function fetchRelay(id: string): Promise<Relay> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const relayDoc = doc(db, 'relays', id);
+  const updatedDoc = await getDoc(relayDoc);
+
+  if (!updatedDoc.exists()) {
+    throw new Error('Relay not found');
+  }
+
+  const data = updatedDoc.data();
+
+  return {
+    id: id,
+    uid: data.uid,
+    name: data.name,
+    state: data.state === true || data.state === 'true',
+    maxOnTime_s: data.maxOnTime_s ?? undefined,
+    turnedOnAt: data.turnedOnAt ? data.turnedOnAt.toDate() : undefined,
+  } as Relay;
+}
+
 export async function updateRelayStateFromDB(
   id: string,
   newState: boolean
@@ -53,7 +82,15 @@ export async function updateRelayStateFromDB(
   }
 
   const relayDoc = doc(db, 'relays', id);
-  await updateDoc(relayDoc, { state: newState });
+  const updateData: { state: boolean; turnedOnAt?: Timestamp } = {
+    state: newState,
+  };
+
+  if (newState) {
+    updateData.turnedOnAt = Timestamp.now();
+  }
+
+  await updateDoc(relayDoc, updateData);
 }
 
 export async function updateRelayConfigFromDB(
