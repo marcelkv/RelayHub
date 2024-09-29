@@ -4,6 +4,7 @@ import {
   getDocs,
   query,
   where,
+  addDoc,
   updateDoc,
   doc,
 } from 'firebase/firestore';
@@ -46,4 +47,39 @@ export async function updateRelayState(
 
   const relayDoc = doc(db, 'relays', id);
   await updateDoc(relayDoc, { state: newState });
+}
+
+export async function addRelayToDB(newRelay: Partial<Relay>): Promise<Relay> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const relayWithUID = {
+    ...newRelay,
+    uid: user.uid,
+  };
+
+  const docRef = await addDoc(relaysCollection, relayWithUID);
+  return { id: docRef.id, ...relayWithUID } as Relay;
+}
+
+export async function isRelayNameUniqueInDB(name: string): Promise<boolean> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const q = query(
+    relaysCollection,
+    where('uid', '==', user.uid),
+    where('name', '==', name)
+  );
+  const querySnapshot = await getDocs(q);
+
+  return querySnapshot.empty;
 }

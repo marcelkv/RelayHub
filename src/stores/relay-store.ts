@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { Relay } from '../types/relay';
-import { fetchRelays, updateRelayState } from '../services/relay-service.ts';
+import {
+  addRelayToDB,
+  fetchRelays,
+  isRelayNameUniqueInDB,
+  updateRelayState,
+} from '../services/relay-service.ts';
 
 export const useRelayStore = defineStore('relay', () => {
   const relays = ref<Relay[]>([]);
@@ -33,5 +38,31 @@ export const useRelayStore = defineStore('relay', () => {
     }
   };
 
-  return { relays, loading, error, loadRelays, updateRelay };
+  const addRelay = async (newRelay: Partial<Relay>) => {
+    try {
+      const addedRelay = await addRelayToDB(newRelay);
+      relays.value.push(addedRelay);
+    } catch (err) {
+      console.error('Failed to add relay:', err);
+    }
+  };
+
+  const isRelayNameUnique = async (name: string): Promise<boolean> => {
+    try {
+      return await isRelayNameUniqueInDB(name);
+    } catch (err) {
+      console.error('Failed to check relay name uniqueness:', err);
+      return false;
+    }
+  };
+
+  return {
+    relays,
+    loading,
+    error,
+    loadRelays,
+    updateRelay,
+    addRelay,
+    isRelayNameUnique,
+  };
 });
