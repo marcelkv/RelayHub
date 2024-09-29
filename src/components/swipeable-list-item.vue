@@ -7,6 +7,7 @@ export default defineComponent({
   setup(_, { emit }) {
     const startX = ref(0);
     const translateX = ref(0);
+    const startTime = ref(0);
     const thresholdOneHit = ref(false);
     const thresholdTwoHit = ref(false);
     let swipeThreshold = 100;
@@ -14,6 +15,7 @@ export default defineComponent({
     const onTouchStart = (e: TouchEvent) => {
       startX.value = e.touches[0].clientX;
       swipeThreshold = (e.currentTarget as HTMLDivElement).clientWidth / 4;
+      startTime.value = Date.now();
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -31,7 +33,8 @@ export default defineComponent({
     };
 
     const onTouchEnd = () => {
-      if (thresholdTwoHit.value) {
+      const elapsedTime = Date.now() - startTime.value;
+      if (thresholdTwoHit.value && elapsedTime > 1000) {
         if (translateX.value < 0) {
           onRightAction();
         } else {
