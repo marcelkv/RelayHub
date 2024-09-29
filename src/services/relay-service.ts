@@ -35,7 +35,7 @@ export async function fetchRelays(): Promise<Relay[]> {
       uid: data.uid,
       name: data.name,
       state: data.state === true || data.state === 'true',
-      maxOnTime_s: data.maxOnTime_ms ?? undefined,
+      maxOnTime_s: data.maxOnTime_s ?? undefined,
       turnedOnAt: data.turnedOnAt ? data.turnedOnAt.toDate() : undefined,
     } as Relay;
   });
