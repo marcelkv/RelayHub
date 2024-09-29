@@ -21,16 +21,18 @@ export default defineComponent({
     const displayName = computed<string>(() => {
       let txt = props.relay.name;
 
-      if (props.relay.maxOnTime_s > 0 && countDownSeconds.value <= 0) {
-        txt += ' - ' + relayStore.getMaxOnTime(props.relay);
-      } else if (countDownSeconds.value > 0) {
-        txt += ' - ' + relayStore.secondsToHHMMSS(countDownSeconds.value);
+      if (props.relay.maxOnTime_s) {
+        if (props.relay.maxOnTime_s > 0 && countDownSeconds.value <= 0) {
+          txt += ' - ' + relayStore.getMaxOnTime(props.relay);
+        } else if (countDownSeconds.value > 0) {
+          txt += ' - ' + relayStore.secondsToHHMMSS(countDownSeconds.value);
+        }
       }
 
       return txt;
     });
 
-    async function applyArrayState(): Promise<boolean> {
+    async function applyArrayState(): Promise<void> {
       if (props.relay.maxOnTime_s === 0) {
         return;
       }
@@ -46,10 +48,10 @@ export default defineComponent({
       }
     }
 
-    function handleToggle(newState: boolean): Promise<void> {
-      relayStore.updateRelayState(props.relay.id, newState);
+    async function handleToggle(newState: boolean): Promise<void> {
+      await relayStore.updateRelayState(props.relay.id, newState);
 
-      if (props.relay.maxOnTime_s === 0) {
+      if (!props.relay.maxOnTime_s || props.relay.maxOnTime_s === 0) {
         return;
       }
 
@@ -63,6 +65,10 @@ export default defineComponent({
     }
 
     function calculateRemainingSeconds(): number {
+      if (!props.relay.turnedOnAt || !props.relay.maxOnTime_s) {
+        return 0;
+      }
+
       const endTime =
         props.relay.turnedOnAt.getTime() + props.relay.maxOnTime_s * 1000;
       return Math.max(0, Math.floor((endTime - Date.now()) / 1000));

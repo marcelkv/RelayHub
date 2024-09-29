@@ -104,7 +104,7 @@ export const useRelayStore = defineStore('relay', () => {
   };
 
   function getMaxOnTime(relay: Relay): string {
-    return secondsToHHMMSS(relay.maxOnTime_s);
+    return secondsToHHMMSS(relay.maxOnTime_s ? relay.maxOnTime_s : 0);
   }
 
   function secondsToHHMMSS(totalSeconds: number): string {
