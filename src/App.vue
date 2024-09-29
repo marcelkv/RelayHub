@@ -57,6 +57,7 @@ body {
   display: flex;
   flex-direction: column;
   background-color: black;
+  color: white;
   --taskBarHeight: 70px;
   --taskBarColor: black;
 
@@ -70,6 +71,10 @@ body {
       height: 100%;
       max-height: calc(100% - var(--taskBarHeight));
     }
+  }
+
+  .sign-in {
+    color: black;
   }
 }
 </style>

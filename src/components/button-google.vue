@@ -39,7 +39,7 @@ export default defineComponent({
 <template>
   <div class="button-google">
     <ButtonDefault
-      text="Sign in mit Google"
+      text="Sign in with Google"
       v-bind:isLoading="isLoading"
       v-on:onButtonClicked="onButtonClicked"
     >

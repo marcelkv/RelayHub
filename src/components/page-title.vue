@@ -19,6 +19,7 @@ export default defineComponent({
 .page-tite {
   height: var(--taskBarHeight);
   width: 100%;
+  font-size: 28px;
   display: flex;
   justify-content: center;
   align-items: center;
