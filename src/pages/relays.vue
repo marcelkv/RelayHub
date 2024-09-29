@@ -24,7 +24,7 @@ export default defineComponent({
       nameError.value = '';
     }
 
-    function requestEdit(): void {}
+    function requestEdit(_id: string): void {}
 
     async function requestDelete(id: string): Promise<void> {
       await relayStore.deleteRelay(id);
@@ -48,7 +48,7 @@ export default defineComponent({
       newRelayName.value = '';
     };
 
-    async function validateName(): Promise<void> {
+    async function validateName(): Promise<boolean> {
       if (newRelayName.value.trim().length < 2) {
         nameError.value = 'Relay name must be at least 2 characters long.';
         return false;
