@@ -66,7 +66,13 @@ export default defineComponent({
 
       const timeFormatRegex = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
 
-      return timeFormatRegex.test(time);
+      const isTimeValid = timeFormatRegex.test(time);
+
+      if (!isTimeValid) {
+        errors.value = 'Max on time must be in the format HH:MM:SS.';
+      }
+
+      return isTimeValid;
     }
 
     function timeStringToSeconds(): number {
@@ -100,7 +106,7 @@ export default defineComponent({
       class="relay-input"
     />
     <div v-if="$props.allowAdvancedSettings" class="max-on-time">
-      <div class="header">Max On Time</div>
+      <div class="header">Max on time</div>
       <input
         v-model="newMaxOnTime"
         type="text"
