@@ -84,6 +84,26 @@ export const useRelayStore = defineStore('relay', () => {
     }
   };
 
+  function getMaxOnTime(relay: Relay): string {
+    return secondsToHHMMSS(relay.maxOnTime_s);
+  }
+
+  function secondsToHHMMSS(totalSeconds: number): string {
+    if (isNaN(totalSeconds) || totalSeconds < 0) {
+      return '00:00:00';
+    }
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const paddedHours = String(hours).padStart(2, '0');
+    const paddedMinutes = String(minutes).padStart(2, '0');
+    const paddedSeconds = String(seconds).padStart(2, '0');
+
+    return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
+  }
+
   return {
     relays,
     loading,
@@ -94,5 +114,6 @@ export const useRelayStore = defineStore('relay', () => {
     addRelay,
     isRelayNameUnique,
     deleteRelay,
+    getMaxOnTime,
   };
 });

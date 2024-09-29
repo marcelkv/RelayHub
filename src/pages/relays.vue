@@ -71,6 +71,7 @@ export default defineComponent({
     <div v-if="!relayStore.loading && !relayStore.error">
       <swipeable-list-item
         v-for="relay in relayStore.relays"
+        v-bind:blockSwipe="editableRelayId.length > 0"
         v-on:leftAction="requestEdit(relay.id)"
         v-on:rightAction="requestDelete(relay.id)"
       >

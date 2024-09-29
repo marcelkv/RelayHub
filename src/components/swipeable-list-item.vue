@@ -4,7 +4,8 @@ import { defineComponent, ref } from 'vue';
 export default defineComponent({
   name: 'SwipeableListItem',
   emits: ['left-action', 'right-action'],
-  setup(_, { emit }) {
+  props: { blockSwipe: { type: Boolean, default: false } },
+  setup(props, { emit }) {
     const startX = ref(0);
     const translateX = ref(0);
     const startTime = ref(0);
@@ -13,12 +14,20 @@ export default defineComponent({
     let swipeThreshold = 100;
 
     const onTouchStart = (e: TouchEvent) => {
+      if (props.blockSwipe) {
+        return;
+      }
+
       startX.value = e.touches[0].clientX;
       swipeThreshold = (e.currentTarget as HTMLDivElement).clientWidth / 4;
       startTime.value = Date.now();
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      if (props.blockSwipe) {
+        return;
+      }
+
       const currentX = e.touches[0].clientX;
       translateX.value = currentX - startX.value;
       if (Math.abs(translateX.value) > swipeThreshold * 2) {
@@ -33,6 +42,10 @@ export default defineComponent({
     };
 
     const onTouchEnd = () => {
+      if (props.blockSwipe) {
+        return;
+      }
+
       const elapsedTime = Date.now() - startTime.value;
       if (thresholdTwoHit.value && elapsedTime > 1000) {
         if (translateX.value < 0) {

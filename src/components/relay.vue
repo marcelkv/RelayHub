@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { computed, defineComponent, PropType } from 'vue';
 import { Relay } from '../types/relay';
 import ToggleButton from './toggle-button.vue';
 import { useRelayStore } from '../stores/relay-store.ts';
@@ -16,14 +16,24 @@ export default defineComponent({
       relayStore.updateRelayState(props.relay.id, newState);
     };
 
-    return { handleToggle };
+    const displayName = computed<string>(() => {
+      let txt = props.relay.name;
+
+      if (props.relay.maxOnTime_s > 0) {
+        txt += ' - ' + relayStore.getMaxOnTime(props.relay);
+      }
+
+      return txt;
+    });
+
+    return { displayName, handleToggle };
   },
 });
 </script>
 
 <template>
   <div class="relay">
-    <div class="name">{{ $props.relay.name }}</div>
+    <div class="name">{{ displayName }}</div>
     <toggle-button
       v-bind:modelValue="$props.relay.state"
       v-on:update:modelValue="handleToggle"
