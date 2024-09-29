@@ -28,11 +28,17 @@ export async function fetchRelays(): Promise<Relay[]> {
   const q = query(relaysCollection, where('uid', '==', user.uid)); // Fetch relays only for the current user
   const querySnapshot = await getDocs(q);
 
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-    state: doc.data().state === true || doc.data().state === 'true',
-  })) as Relay[];
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      uid: data.uid,
+      name: data.name,
+      state: data.state === true || data.state === 'true',
+      maxOnTime_s: data.maxOnTime_ms ?? undefined,
+      turnedOnAt: data.turnedOnAt ? data.turnedOnAt.toDate() : undefined,
+    } as Relay;
+  });
 }
 
 export async function updateRelayState(
@@ -48,6 +54,21 @@ export async function updateRelayState(
 
   const relayDoc = doc(db, 'relays', id);
   await updateDoc(relayDoc, { state: newState });
+}
+
+export async function updateRelayMaxOnTime(
+  id: string,
+  newMaxOnTime_s: number
+): Promise<void> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const relayDoc = doc(db, 'relays', id);
+  await updateDoc(relayDoc, { maxOnTime_s: newMaxOnTime_s });
 }
 
 export async function addRelayToDB(newRelay: Partial<Relay>): Promise<Relay> {
