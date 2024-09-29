@@ -1,11 +1,20 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted } from 'vue';
 import PageTitle from '../components/page-title.vue';
+import Spinner from '../components/spinner.vue';
+import Relay from '../components/relay.vue';
+import { useRelayStore } from '../stores/relay-store.ts';
 
 export default defineComponent({
-  components: { PageTitle },
+  components: { Relay, Spinner, PageTitle },
   setup() {
-    return {};
+    const relayStore = useRelayStore();
+
+    onMounted(() => {
+      relayStore.loadRelays(); // Fetch relays when the component is mounted
+    });
+
+    return { relayStore };
   },
 });
 </script>
@@ -13,6 +22,18 @@ export default defineComponent({
 <template>
   <div class="relays">
     <page-title v-bind:title="'Relays'" />
+    <spinner
+      v-if="relayStore.loading"
+      v-bind:spinner-size="'20px'"
+      v-bind:with-text="true"
+    />
+    <div v-if="!relayStore.loading && !relayStore.error">
+      <relay
+        v-for="relay in relayStore.relays"
+        v-bind:key="relay.id"
+        v-bind:relay="relay"
+      />
+    </div>
   </div>
 </template>
 
@@ -22,6 +43,5 @@ export default defineComponent({
   height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 </style>
