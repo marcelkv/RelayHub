@@ -63,9 +63,13 @@ export const useRelayStore = defineStore('relay', () => {
   const updateRelayState = async (id: string, newState: boolean) => {
     try {
       await updateRelayStateFromDB(id, newState);
-      const relay = relays.value.find(relay => relay.id === id);
-      if (relay) {
-        relay.state = newState;
+      if (newState) {
+        await refreshRelay(id);
+      } else {
+        const relay = relays.value.find(relay => relay.id === id);
+        if (relay) {
+          relay.state = newState;
+        }
       }
     } catch (err) {
       console.error('Failed to update relay state:', err);
