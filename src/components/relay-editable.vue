@@ -1,13 +1,15 @@
 <script lang="ts">
 import ButtonDefault from './button-default.vue';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, onBeforeMount, PropType, ref } from 'vue';
 import { useRelayStore } from '../stores/relay-store.ts';
+import { Relay } from '../types/relay.ts';
 
 export default defineComponent({
   components: { ButtonDefault },
   emits: ['isDone'],
   props: {
     allowAdvancedSettings: { type: Boolean, default: false },
+    existingRelay: { type: Object as PropType<Relay>, default: null },
   },
   setup(props, context) {
     const relayStore = useRelayStore();
@@ -15,17 +17,34 @@ export default defineComponent({
     const newMaxOnTime = ref('');
     const errors = ref('');
 
+    onBeforeMount(() => {
+      if (!props.existingRelay) {
+        return;
+      }
+
+      newRelayName.value = props.existingRelay.name;
+      newMaxOnTime.value = secondsToHHMMSS(props.existingRelay.maxOnTime_s);
+    });
+
     async function saveRelay(): Promise<void> {
       if (!(await validateName()) || !validateMaxOnTime()) {
         return;
       }
 
       const totalSeconds = timeStringToSeconds();
-      await relayStore.addRelay({
-        name: newRelayName.value.trim(),
-        state: false,
-        maxOnTime_s: totalSeconds,
-      });
+      if (props.existingRelay) {
+        await relayStore.updateRelayConfig(
+          props.existingRelay.id,
+          newRelayName.value.trim(),
+          totalSeconds
+        );
+      } else {
+        await relayStore.addRelay({
+          name: newRelayName.value.trim(),
+          state: false,
+          maxOnTime_s: totalSeconds,
+        });
+      }
       newRelayName.value = '';
       context.emit('isDone');
     }
@@ -38,6 +57,13 @@ export default defineComponent({
       if (newRelayName.value.trim().length < 2) {
         errors.value = 'Relay name must be at least 2 characters long.';
         return false;
+      }
+
+      if (
+        props.existingRelay &&
+        props.existingRelay.name === newRelayName.value.trim()
+      ) {
+        return true;
       }
 
       const isNameUnique = await relayStore.isRelayNameUnique(
@@ -83,6 +109,22 @@ export default defineComponent({
       const time = newMaxOnTime.value.trim();
       const [hours, minutes, seconds] = time.split(':').map(Number);
       return hours * 3600 + minutes * 60 + seconds;
+    }
+
+    function secondsToHHMMSS(totalSeconds: number): string {
+      if (isNaN(totalSeconds) || totalSeconds < 0) {
+        return '00:00:00';
+      }
+
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      const paddedHours = String(hours).padStart(2, '0');
+      const paddedMinutes = String(minutes).padStart(2, '0');
+      const paddedSeconds = String(seconds).padStart(2, '0');
+
+      return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
     }
 
     return {

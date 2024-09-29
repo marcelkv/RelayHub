@@ -77,6 +77,8 @@ export default defineComponent({
         <relay-editable
           v-if="editableRelayId && editableRelayId === relay.id"
           v-bind:key="relay.id"
+          v-bind:allowAdvancedSettings="true"
+          v-bind:existingRelay="relay"
           v-on:isDone="onEditArrayDone"
         />
         <relay v-else v-bind:key="relay.id" v-bind:relay="relay" />

@@ -6,7 +6,8 @@ import {
   deleteRelayFromDB,
   fetchRelays,
   isRelayNameUniqueInDB,
-  updateRelayState,
+  updateRelayStateFromDB,
+  updateRelayConfigFromDB,
 } from '../services/relay-service.ts';
 
 export const useRelayStore = defineStore('relay', () => {
@@ -27,9 +28,26 @@ export const useRelayStore = defineStore('relay', () => {
     }
   };
 
-  const updateRelay = async (id: string, newState: boolean) => {
+  const updateRelayConfig = async (
+    id: string,
+    newName: string,
+    newMaxOnTime: number
+  ) => {
     try {
-      await updateRelayState(id, newState);
+      await updateRelayConfigFromDB(id, newName, newMaxOnTime);
+      const relay = relays.value.find(relay => relay.id === id);
+      if (relay) {
+        relay.name = newName;
+        relay.maxOnTime_s = newMaxOnTime;
+      }
+    } catch (err) {
+      console.error('Failed to update relay config:', err);
+    }
+  };
+
+  const updateRelayState = async (id: string, newState: boolean) => {
+    try {
+      await updateRelayStateFromDB(id, newState);
       const relay = relays.value.find(relay => relay.id === id);
       if (relay) {
         relay.state = newState;
@@ -71,7 +89,8 @@ export const useRelayStore = defineStore('relay', () => {
     loading,
     error,
     loadRelays,
-    updateRelay,
+    updateRelayConfig,
+    updateRelayState,
     addRelay,
     isRelayNameUnique,
     deleteRelay,

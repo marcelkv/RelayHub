@@ -41,7 +41,7 @@ export async function fetchRelays(): Promise<Relay[]> {
   });
 }
 
-export async function updateRelayState(
+export async function updateRelayStateFromDB(
   id: string,
   newState: boolean
 ): Promise<void> {
@@ -56,8 +56,9 @@ export async function updateRelayState(
   await updateDoc(relayDoc, { state: newState });
 }
 
-export async function updateRelayMaxOnTime(
+export async function updateRelayConfigFromDB(
   id: string,
+  newName: string,
   newMaxOnTime_s: number
 ): Promise<void> {
   const auth = getAuth(app);
@@ -68,7 +69,7 @@ export async function updateRelayMaxOnTime(
   }
 
   const relayDoc = doc(db, 'relays', id);
-  await updateDoc(relayDoc, { maxOnTime_s: newMaxOnTime_s });
+  await updateDoc(relayDoc, { name: newName, maxOnTime_s: newMaxOnTime_s });
 }
 
 export async function addRelayToDB(newRelay: Partial<Relay>): Promise<Relay> {

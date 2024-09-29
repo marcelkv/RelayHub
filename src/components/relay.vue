@@ -13,7 +13,7 @@ export default defineComponent({
     const relayStore = useRelayStore();
 
     const handleToggle = (newState: boolean) => {
-      relayStore.updateRelay(props.relay.id, newState);
+      relayStore.updateRelayState(props.relay.id, newState);
     };
 
     return { handleToggle };
