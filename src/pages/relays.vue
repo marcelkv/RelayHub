@@ -20,6 +20,7 @@ export default defineComponent({
   setup() {
     const relayStore = useRelayStore();
     const isAddingNewRelay = ref(false);
+    const editableRelayId = ref('');
 
     onMounted(() => {
       relayStore.loadRelays();
@@ -29,23 +30,30 @@ export default defineComponent({
       isAddingNewRelay.value = true;
     }
 
-    function requestEdit(_id: string): void {}
+    function requestEdit(id: string): void {
+      editableRelayId.value = id;
+    }
 
     async function requestDelete(id: string): Promise<void> {
       await relayStore.deleteRelay(id);
     }
 
-    const onAddNewArrayDone = () => {
+    function onEditArrayDone(): void {
+      editableRelayId.value = '';
+    }
+
+    function onAddNewArrayDone(): void {
       isAddingNewRelay.value = false;
-    };
+    }
 
     return {
       relayStore,
       isAddingNewRelay,
-
+      editableRelayId,
       startAddingRelay,
       requestEdit,
       requestDelete,
+      onEditArrayDone,
       onAddNewArrayDone,
     };
   },
@@ -66,7 +74,12 @@ export default defineComponent({
         v-on:leftAction="requestEdit(relay.id)"
         v-on:rightAction="requestDelete(relay.id)"
       >
-        <relay v-bind:key="relay.id" v-bind:relay="relay" />
+        <relay-editable
+          v-if="editableRelayId && editableRelayId === relay.id"
+          v-bind:key="relay.id"
+          v-on:isDone="onEditArrayDone"
+        />
+        <relay v-else v-bind:key="relay.id" v-bind:relay="relay" />
       </swipeable-list-item>
     </div>
     <button-default
