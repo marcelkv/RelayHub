@@ -1,5 +1,12 @@
 <script lang="ts">
-import { computed, defineComponent, onBeforeMount, PropType, ref } from 'vue';
+import {
+  computed,
+  defineComponent,
+  onBeforeMount,
+  onBeforeUnmount,
+  PropType,
+  ref,
+} from 'vue';
 import { Relay } from '../types/relay';
 import ToggleButton from './toggle-button.vue';
 import { useRelayStore } from '../stores/relay-store.ts';
@@ -18,14 +25,18 @@ export default defineComponent({
       await applyArrayState();
     });
 
+    onBeforeUnmount(() => {
+      clearTimeout(timeoutId);
+    });
+
     const displayName = computed<string>(() => {
       let txt = props.relay.name;
 
-      if (props.relay.maxOnTime_s) {
-        if (props.relay.maxOnTime_s > 0 && countDownSeconds.value <= 0) {
-          txt += ' - ' + relayStore.getMaxOnTime(props.relay);
-        } else if (countDownSeconds.value > 0) {
+      if (props.relay.maxOnTime_s && props.relay.maxOnTime_s > 0) {
+        if (props.relay.state) {
           txt += ' - ' + relayStore.secondsToHHMMSS(countDownSeconds.value);
+        } else {
+          txt += ' - ' + relayStore.getMaxOnTime(props.relay);
         }
       }
 
@@ -37,18 +48,24 @@ export default defineComponent({
         return;
       }
 
-      const remainingSeconds = calculateRemainingSeconds();
-      if (remainingSeconds === 0) {
-        if (props.relay.state) {
-          await relayStore.updateRelayState(props.relay.id, false);
-        }
-      } else if (props.relay.state) {
-        countDownSeconds.value = remainingSeconds;
-        countDown();
+      countDownSeconds.value = calculateRemainingSeconds();
+
+      if (countDownSeconds.value === 0) {
+        return;
       }
+
+      if (!props.relay.state) {
+        return;
+      }
+
+      countDown();
     }
 
     async function handleToggle(newState: boolean): Promise<void> {
+      if (newState && props.relay.maxOnTime_s) {
+        countDownSeconds.value = props.relay.maxOnTime_s;
+      }
+
       await relayStore.updateRelayState(props.relay.id, newState);
 
       if (!props.relay.maxOnTime_s || props.relay.maxOnTime_s === 0) {
@@ -56,7 +73,6 @@ export default defineComponent({
       }
 
       if (newState) {
-        countDownSeconds.value = props.relay.maxOnTime_s;
         countDown();
       } else {
         clearTimeout(timeoutId);
@@ -79,12 +95,11 @@ export default defineComponent({
       timeoutId = setTimeout(async () => {
         countDownSeconds.value--;
 
-        if (countDownSeconds.value > 0) {
-          countDown();
-        } else {
-          await relayStore.refreshRelay(props.relay.id);
-          await applyArrayState();
+        if (countDownSeconds.value === 0) {
+          return;
         }
+
+        countDown();
       }, 1000);
     }
 

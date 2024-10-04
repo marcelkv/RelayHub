@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { onUnmounted, ref } from 'vue';
 import { Relay } from '../types/relay';
 import {
   addRelayToDB,
@@ -8,38 +8,28 @@ import {
   isRelayNameUniqueInDB,
   updateRelayStateFromDB,
   updateRelayConfigFromDB,
-  fetchRelay,
+  onRelayStateChange,
 } from '../services/relay-service.ts';
 
 export const useRelayStore = defineStore('relay', () => {
   const relays = ref<Relay[]>([]);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const listeners = ref<Record<string, () => void>>({});
 
   const loadRelays = async () => {
     loading.value = true;
     error.value = null;
     try {
       relays.value = await fetchRelays();
+      relays.value.forEach(relay => {
+        setupRelayListener(relay.id);
+      });
     } catch (err) {
       error.value = 'Failed to load relays';
       console.error(err);
     } finally {
       loading.value = false;
-    }
-  };
-
-  const refreshRelay = async (id: string) => {
-    try {
-      const updatedRelay = await fetchRelay(id);
-      const relayIndex = relays.value.findIndex(relay => relay.id === id);
-      if (relayIndex !== -1) {
-        relays.value[relayIndex] = updatedRelay;
-      } else {
-        console.warn('Relay not found in local state:', id);
-      }
-    } catch (err) {
-      console.error('Failed to refresh relay:', err);
     }
   };
 
@@ -63,13 +53,9 @@ export const useRelayStore = defineStore('relay', () => {
   const updateRelayState = async (id: string, newState: boolean) => {
     try {
       await updateRelayStateFromDB(id, newState);
-      if (newState) {
-        await refreshRelay(id);
-      } else {
-        const relay = relays.value.find(relay => relay.id === id);
-        if (relay) {
-          relay.state = newState;
-        }
+      const relay = relays.value.find(relay => relay.id === id);
+      if (relay) {
+        relay.state = newState;
       }
     } catch (err) {
       console.error('Failed to update relay state:', err);
@@ -80,8 +66,19 @@ export const useRelayStore = defineStore('relay', () => {
     try {
       const addedRelay = await addRelayToDB(newRelay);
       relays.value.push(addedRelay);
+      setupRelayListener(addedRelay.id);
     } catch (err) {
       console.error('Failed to add relay:', err);
+    }
+  };
+
+  const deleteRelay = async (id: string) => {
+    try {
+      await deleteRelayFromDB(id);
+      relays.value = relays.value.filter(relay => relay.id !== id);
+      unsubscribeRelayListener(id);
+    } catch (err) {
+      console.error('Failed to delete relay:', err);
     }
   };
 
@@ -91,15 +88,6 @@ export const useRelayStore = defineStore('relay', () => {
     } catch (err) {
       console.error('Failed to check relay name uniqueness:', err);
       return false;
-    }
-  };
-
-  const deleteRelay = async (id: string) => {
-    try {
-      await deleteRelayFromDB(id);
-      relays.value = relays.value.filter(relay => relay.id !== id); // Remove relay from local state
-    } catch (err) {
-      console.error('Failed to delete relay:', err);
     }
   };
 
@@ -123,6 +111,29 @@ export const useRelayStore = defineStore('relay', () => {
     return `${paddedHours}:${paddedMinutes}:${paddedSeconds}`;
   }
 
+  const setupRelayListener = (id: string) => {
+    unsubscribeRelayListener(id);
+    listeners.value[id] = onRelayStateChange(id, updatedRelay => {
+      const relayIndex = relays.value.findIndex(relay => relay.id === id);
+      if (relayIndex !== -1) {
+        relays.value[relayIndex] = updatedRelay;
+      }
+    });
+  };
+
+  const unsubscribeRelayListener = (id: string) => {
+    if (listeners.value[id]) {
+      listeners.value[id]();
+      delete listeners.value[id];
+    }
+  };
+
+  onUnmounted(() => {
+    Object.keys(listeners.value).forEach(id => {
+      unsubscribeRelayListener(id);
+    });
+  });
+
   return {
     relays,
     loading,
@@ -135,6 +146,5 @@ export const useRelayStore = defineStore('relay', () => {
     deleteRelay,
     getMaxOnTime,
     secondsToHHMMSS,
-    refreshRelay,
   };
 });

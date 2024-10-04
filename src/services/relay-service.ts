@@ -8,7 +8,7 @@ import {
   addDoc,
   updateDoc,
   doc,
-  getDoc,
+  onSnapshot,
   Timestamp,
 } from 'firebase/firestore';
 import { Relay } from '../types/relay';
@@ -41,33 +41,6 @@ export async function fetchRelays(): Promise<Relay[]> {
       turnedOnAt: data.turnedOnAt ? data.turnedOnAt.toDate() : undefined,
     } as Relay;
   });
-}
-
-export async function fetchRelay(id: string): Promise<Relay> {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
-  }
-
-  const relayDoc = doc(db, 'relays', id);
-  const updatedDoc = await getDoc(relayDoc);
-
-  if (!updatedDoc.exists()) {
-    throw new Error('Relay not found');
-  }
-
-  const data = updatedDoc.data();
-
-  return {
-    id: id,
-    uid: data.uid,
-    name: data.name,
-    state: data.state === true || data.state === 'true',
-    maxOnTime_s: data.maxOnTime_s ?? undefined,
-    turnedOnAt: data.turnedOnAt ? data.turnedOnAt.toDate() : undefined,
-  } as Relay;
 }
 
 export async function updateRelayStateFromDB(
@@ -154,4 +127,37 @@ export async function isRelayNameUniqueInDB(name: string): Promise<boolean> {
   const querySnapshot = await getDocs(q);
 
   return querySnapshot.empty;
+}
+
+export function onRelayStateChange(
+  id: string,
+  onUpdate: (updatedRelay: Relay) => void
+): () => void {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const relayDoc = doc(db, 'relays', id);
+
+  return onSnapshot(relayDoc, docSnapshot => {
+    if (docSnapshot.exists()) {
+      const data = docSnapshot.data();
+
+      const updatedRelay: Relay = {
+        id: docSnapshot.id,
+        uid: data.uid,
+        name: data.name,
+        state: data.state === true || data.state === 'true',
+        maxOnTime_s: data.maxOnTime_s ?? undefined,
+        turnedOnAt: data.turnedOnAt ? data.turnedOnAt.toDate() : undefined,
+      };
+
+      onUpdate(updatedRelay);
+    } else {
+      console.error('Relay not found');
+    }
+  });
 }
