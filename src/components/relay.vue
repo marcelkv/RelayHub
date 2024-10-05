@@ -21,7 +21,7 @@ export default defineComponent({
     const relayStore = useRelayStore();
     const countDownSeconds = ref(0);
     let timeoutId: NodeJS.Timeout;
-    const lastStartTime: Date = ref(props.relay.turnedOnAt);
+    const lastStartTime = ref(props.relay.turnedOnAt);
     const isBlocked = ref(false);
 
     onBeforeMount(async () => {
@@ -116,6 +116,10 @@ export default defineComponent({
     }
 
     function onTurnedOnAtChanged(): void {
+      if (!lastStartTime.value || !props.relay.turnedOnAt) {
+        return;
+      }
+
       if (lastStartTime.value >= props.relay.turnedOnAt) {
         return;
       }
