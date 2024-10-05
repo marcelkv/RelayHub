@@ -6,6 +6,7 @@ import {
   onBeforeUnmount,
   PropType,
   ref,
+  watch,
 } from 'vue';
 import { Relay } from '../types/relay';
 import ToggleButton from './toggle-button.vue';
@@ -20,6 +21,8 @@ export default defineComponent({
     const relayStore = useRelayStore();
     const countDownSeconds = ref(0);
     let timeoutId: NodeJS.Timeout;
+    const lastStartTime: Date = ref(props.relay.turnedOnAt);
+    const isBlocked = ref(false);
 
     onBeforeMount(async () => {
       await applyArrayState();
@@ -66,15 +69,20 @@ export default defineComponent({
         countDownSeconds.value = props.relay.maxOnTime_s;
       }
 
+      if (newState) {
+        lastStartTime.value = props.relay.turnedOnAt;
+        isBlocked.value = true;
+      } else {
+        isBlocked.value = false;
+      }
+
       await relayStore.updateRelayState(props.relay.id, newState);
 
       if (!props.relay.maxOnTime_s || props.relay.maxOnTime_s === 0) {
         return;
       }
 
-      if (newState) {
-        countDown();
-      } else {
+      if (!newState) {
         clearTimeout(timeoutId);
         countDownSeconds.value = 0;
       }
@@ -91,6 +99,10 @@ export default defineComponent({
     }
 
     function countDown(): void {
+      if (!props.relay.maxOnTime_s || props.relay.maxOnTime_s === 0) {
+        return;
+      }
+
       clearTimeout(timeoutId);
       timeoutId = setTimeout(async () => {
         countDownSeconds.value--;
@@ -103,7 +115,18 @@ export default defineComponent({
       }, 1000);
     }
 
-    return { displayName, handleToggle };
+    function onTurnedOnAtChanged(): void {
+      if (lastStartTime.value >= props.relay.turnedOnAt) {
+        return;
+      }
+
+      isBlocked.value = false;
+      countDown();
+    }
+
+    watch(() => props.relay.turnedOnAt, onTurnedOnAtChanged);
+
+    return { displayName, isBlocked, handleToggle };
   },
 });
 </script>
@@ -113,6 +136,7 @@ export default defineComponent({
     <div class="name">{{ displayName }}</div>
     <toggle-button
       v-bind:modelValue="$props.relay.state"
+      v-bind:isBlocked="isBlocked"
       v-on:update:modelValue="handleToggle"
     />
   </div>

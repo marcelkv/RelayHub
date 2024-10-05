@@ -8,10 +8,12 @@ export default defineComponent({
       type: Boolean,
       required: true,
     },
+    isBlocked: { type: Boolean, default: false },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
     const isActive = ref(props.modelValue);
+    const blocked = ref(false);
 
     watch(
       () => props.modelValue,
@@ -21,7 +23,13 @@ export default defineComponent({
     );
 
     const toggleSwitch = () => {
+      if (props.isBlocked || blocked.value) {
+        return;
+      }
+
       isActive.value = !isActive.value;
+      blocked.value = true;
+      setTimeout(() => (blocked.value = false), 500);
       emit('update:modelValue', isActive.value);
     };
 

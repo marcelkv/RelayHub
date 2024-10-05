@@ -55,13 +55,9 @@ export async function updateRelayStateFromDB(
   }
 
   const relayDoc = doc(db, 'relays', id);
-  const updateData: { state: boolean; turnedOnAt?: Timestamp } = {
+  const updateData: { state: boolean } = {
     state: newState,
   };
-
-  if (newState) {
-    updateData.turnedOnAt = Timestamp.now();
-  }
 
   await updateDoc(relayDoc, updateData);
 }
