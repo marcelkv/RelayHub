@@ -22,7 +22,7 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const pageStore = usePageStore();
   pageStore.setPage(to.name as string);
   next();

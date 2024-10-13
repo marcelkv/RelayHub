@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, ref } from 'vue';
 import TaskBar from './components/task-bar.vue';
 import SignIn from './components/sign-in.vue';
 import Relays from './pages/relays.vue';
@@ -14,10 +14,22 @@ export default defineComponent({
   setup() {
     const userStore = useUserStore();
     const pageStore = usePageStore();
+    const ref_body = ref<HTMLElement | null>(null);
 
     const signedIn = computed<boolean>(() => !!userStore.user);
 
-    return { signedIn, pageStore };
+    function scrollToBottom(): void {
+      if (!ref_body.value) {
+        return;
+      }
+
+      ref_body.value.scroll({
+        top: ref_body.value.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+
+    return { signedIn, pageStore, ref_body, scrollToBottom };
   },
 });
 </script>
@@ -26,9 +38,15 @@ export default defineComponent({
   <div class="app">
     <div v-if="signedIn" class="signed-in">
       <top-bar />
-      <div class="body">
-        <relays v-if="pageStore.currentPage === 'relays'" />
-        <schedules v-else-if="pageStore.currentPage === 'schedules'" />
+      <div class="body" ref="ref_body">
+        <relays
+          v-if="pageStore.currentPage === 'relays'"
+          v-on:requestScrollToBottom="scrollToBottom"
+        />
+        <schedules
+          v-else-if="pageStore.currentPage === 'schedules'"
+          v-on:requestScrollToBottom="scrollToBottom"
+        />
       </div>
       <task-bar />
     </div>

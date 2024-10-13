@@ -6,7 +6,7 @@ export const usePageStore = defineStore('page', () => {
 
   const pageTitles: Record<string, string> = {
     relays: 'Relay Control',
-    schedules: 'Task Schedule',
+    schedules: 'Task Schedules',
   };
 
   const setPage = (newPage: string) => {
