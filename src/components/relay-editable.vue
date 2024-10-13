@@ -193,11 +193,13 @@ export default defineComponent({
     .button-save {
       background-color: #028700;
       margin: 10px;
+      width: 100%;
     }
 
     .button-cancel {
       background-color: orangered;
       margin: 10px;
+      width: 100%;
     }
   }
 

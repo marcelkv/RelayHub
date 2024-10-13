@@ -6,10 +6,11 @@ import Relays from './pages/relays.vue';
 import Schedules from './components/schedules.vue';
 import { useUserStore } from './stores/user-store.ts';
 import { usePageStore } from './stores/page-store.ts';
+import TopBar from './components/top-bar.vue';
 
 export default defineComponent({
   name: 'App',
-  components: { Schedules, Relays, TaskBar, SignIn },
+  components: { TopBar, Schedules, Relays, TaskBar, SignIn },
   setup() {
     const userStore = useUserStore();
     const pageStore = usePageStore();
@@ -24,6 +25,7 @@ export default defineComponent({
 <template>
   <div class="app">
     <div v-if="signedIn" class="signed-in">
+      <top-bar />
       <div class="body">
         <relays v-if="pageStore.currentPage === 'relays'" />
         <schedules v-else-if="pageStore.currentPage === 'schedules'" />
@@ -58,6 +60,8 @@ body {
   flex-direction: column;
   background-color: black;
   color: white;
+  --topBarHeight: 70px;
+  --topBarColor: black;
   --taskBarHeight: 70px;
   --taskBarColor: black;
 
@@ -65,11 +69,18 @@ body {
     height: 100%;
     width: 100%;
 
+    .top-bar,
+    .task-bar {
+      z-index: 1;
+    }
+
     .body {
+      position: relative;
       z-index: 0;
       width: 100%;
       height: 100%;
-      max-height: calc(100% - var(--taskBarHeight));
+      max-height: calc(100% - var(--topBarHeight) - var(--taskBarHeight));
+      overflow: auto;
     }
   }
 

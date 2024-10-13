@@ -1,25 +1,29 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
-import { usePageStore } from '../stores/page-store.ts';
+import { defineComponent, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'task-bar',
   setup() {
-    const pageStore = usePageStore();
+    const router = useRouter();
 
-    function selectPage(page: string): void {
-      pageStore.setPage(page);
+    onMounted(() => {
+      navigateToPage('relays');
+    });
+
+    function navigateToPage(page: string): void {
+      router.push({ name: page });
     }
 
-    return { selectPage };
+    return {};
   },
 });
 </script>
 
 <template>
   <div class="task-bar">
-    <div class="task" v-on:click="selectPage('schedules')">Schedules</div>
-    <div class="task" v-on:click="selectPage('relays')">Relays</div>
+    <router-link class="task" to="/schedules">Schedules</router-link>
+    <router-link class="task" to="/relays">Relays</router-link>
   </div>
 </template>
 

@@ -1,6 +1,5 @@
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue';
-import PageTitle from '../components/page-title.vue';
 import Spinner from '../components/spinner.vue';
 import Relay from '../components/relay.vue';
 import ButtonDefault from '../components/button-default.vue';
@@ -15,7 +14,6 @@ export default defineComponent({
     ButtonDefault,
     Relay,
     Spinner,
-    PageTitle,
   },
   setup() {
     const relayStore = useRelayStore();
@@ -62,7 +60,6 @@ export default defineComponent({
 
 <template>
   <div class="relays">
-    <page-title v-bind:title="'Relays'" />
     <spinner
       v-if="relayStore.loading"
       v-bind:spinner-size="'20px'"
@@ -100,5 +97,11 @@ export default defineComponent({
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  .button-default {
+    width: auto;
+    min-height: 62px;
+    background-color: blueviolet;
+  }
 }
 </style>
