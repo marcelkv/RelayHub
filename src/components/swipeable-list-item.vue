@@ -7,20 +7,25 @@ export default defineComponent({
   props: { blockSwipe: { type: Boolean, default: false } },
   setup(props, { emit }) {
     const startX = ref(0);
+    const startY = ref(0);
     const translateX = ref(0);
     const startTime = ref(0);
     const thresholdOneHit = ref(false);
     const thresholdTwoHit = ref(false);
     let swipeThreshold = 100;
+    let isSwipingHorizontally = ref(false);
+    let isDirectionLocked = ref(false);
 
     const onTouchStart = (e: TouchEvent) => {
       if (props.blockSwipe) {
         return;
       }
-
       startX.value = e.touches[0].clientX;
+      startY.value = e.touches[0].clientY;
       swipeThreshold = (e.currentTarget as HTMLDivElement).clientWidth / 4;
       startTime.value = Date.now();
+      isSwipingHorizontally.value = false;
+      isDirectionLocked.value = false;
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -29,7 +34,30 @@ export default defineComponent({
       }
 
       const currentX = e.touches[0].clientX;
-      translateX.value = currentX - startX.value;
+      const currentY = e.touches[0].clientY;
+
+      const deltaX = currentX - startX.value;
+      const deltaY = currentY - startY.value;
+
+      if (isDirectionLocked.value && isSwipingHorizontally.value) {
+        handleHorizontalSwipe(deltaX);
+        return;
+      }
+
+      if (!isDirectionLocked.value) {
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          isSwipingHorizontally.value = true;
+          isDirectionLocked.value = true;
+          handleHorizontalSwipe(deltaX);
+        } else {
+          isSwipingHorizontally.value = false;
+          isDirectionLocked.value = true;
+        }
+      }
+    };
+
+    const handleHorizontalSwipe = (deltaX: number) => {
+      translateX.value = deltaX;
       if (Math.abs(translateX.value) > swipeThreshold * 2) {
         thresholdTwoHit.value = true;
       } else if (Math.abs(translateX.value) > swipeThreshold) {
@@ -42,10 +70,9 @@ export default defineComponent({
     };
 
     const onTouchEnd = () => {
-      if (props.blockSwipe) {
+      if (props.blockSwipe || !isSwipingHorizontally.value) {
         return;
       }
-
       const elapsedTime = Date.now() - startTime.value;
       if (thresholdTwoHit.value && elapsedTime > 1000) {
         if (translateX.value < 0) {
