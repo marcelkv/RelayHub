@@ -3,7 +3,7 @@ import { computed, defineComponent, ref } from 'vue';
 import TaskBar from './components/task-bar.vue';
 import SignIn from './components/sign-in.vue';
 import Relays from './pages/relays.vue';
-import Schedules from './components/schedules.vue';
+import Schedules from './pages/schedules.vue';
 import { useUserStore } from './stores/user-store.ts';
 import { usePageStore } from './stores/page-store.ts';
 import TopBar from './components/top-bar.vue';

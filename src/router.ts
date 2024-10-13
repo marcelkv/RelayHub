@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Relays from './pages/relays.vue';
-import Schedules from './components/schedules.vue';
+import Schedules from './pages/schedules.vue';
 import { usePageStore } from './stores/page-store.ts';
 
 const routes = [
