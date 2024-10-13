@@ -21,6 +21,7 @@ export default defineComponent({
     const isAddingNewRelay = ref(false);
     const editableRelayId = ref('');
     const isVerticallySwiped = ref(false);
+    const ref_relayItems = ref<HTMLElement | null>(null);
     let startY = 0;
     let startX = 0;
 
@@ -39,6 +40,10 @@ export default defineComponent({
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      if (isVerticallySwiped.value) {
+        return;
+      }
+
       const touch = e.touches[0];
       const deltaX = Math.abs(touch.clientX - startX);
       const deltaY = Math.abs(touch.clientY - startY);
@@ -48,7 +53,7 @@ export default defineComponent({
       }
 
       isVerticallySwiped.value = true;
-      context.emit('requestScrollToBottom');
+      setTimeout(() => context.emit('requestScrollToBottom'));
     };
 
     function startAddingRelay(): void {
@@ -58,6 +63,15 @@ export default defineComponent({
 
     function requestEdit(id: string): void {
       editableRelayId.value = id;
+      const index = relayStore.relays.findIndex(relay => relay.id === id);
+
+      if (!ref_relayItems.value || !ref_relayItems.value[index]) {
+        return;
+      }
+
+      setTimeout(() =>
+        context.emit('requestScrollToBottom', ref_relayItems.value[index].$el)
+      );
     }
 
     async function requestDelete(id: string): Promise<void> {
@@ -73,6 +87,7 @@ export default defineComponent({
     }
 
     return {
+      ref_relayItems,
       relayStore,
       isAddingNewRelay,
       editableRelayId,
@@ -103,8 +118,11 @@ export default defineComponent({
     <div v-if="!relayStore.loading && !relayStore.error">
       <swipeable-list-item
         v-for="relay in relayStore.relays"
+        ref="ref_relayItems"
         v-bind:key="relay.id"
-        v-bind:blockSwipe="editableRelayId.length > 0 || relay.state"
+        v-bind:blockSwipe="
+          editableRelayId.length > 0 || relay.state || isAddingNewRelay
+        "
         v-on:leftAction="requestEdit(relay.id)"
         v-on:rightAction="requestDelete(relay.id)"
       >
@@ -119,12 +137,16 @@ export default defineComponent({
       </swipeable-list-item>
     </div>
     <button-default
-      v-if="!isAddingNewRelay && isVerticallySwiped"
+      v-if="
+        !isAddingNewRelay && isVerticallySwiped && editableRelayId.length === 0
+      "
       v-bind:text="'Add new Relay'"
       v-on:onButtonClicked="startAddingRelay"
     />
     <relay-editable
-      v-if="isAddingNewRelay && isVerticallySwiped"
+      v-if="
+        isAddingNewRelay && isVerticallySwiped && editableRelayId.length === 0
+      "
       v-on:isDone="onAddNewArrayDone"
     />
   </div>

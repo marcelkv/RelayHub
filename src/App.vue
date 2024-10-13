@@ -18,15 +18,19 @@ export default defineComponent({
 
     const signedIn = computed<boolean>(() => !!userStore.user);
 
-    function scrollToBottom(): void {
+    function scrollToBottom(element?: HTMLElement): void {
       if (!ref_body.value) {
         return;
       }
 
-      ref_body.value.scroll({
-        top: ref_body.value.scrollHeight,
-        behavior: 'smooth',
-      });
+      if (element instanceof HTMLElement) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } else {
+        ref_body.value.scroll({
+          top: ref_body.value.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
     }
 
     return { signedIn, pageStore, ref_body, scrollToBottom };
