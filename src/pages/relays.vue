@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+import { ComponentPublicInstance, defineComponent, onMounted, ref } from 'vue';
 import Spinner from '../components/spinner.vue';
 import Relay from '../components/relay.vue';
 import ButtonDefault from '../components/button-default.vue';
@@ -21,7 +21,7 @@ export default defineComponent({
     const isAddingNewRelay = ref(false);
     const editableRelayId = ref('');
     const isVerticallySwiped = ref(false);
-    const ref_relayItems = ref<HTMLElement | null>(null);
+    const ref_relayItems = ref<(ComponentPublicInstance | null)[]>([]);
     let startY = 0;
     let startX = 0;
 
@@ -70,7 +70,7 @@ export default defineComponent({
       }
 
       setTimeout(() =>
-        context.emit('requestScrollToBottom', ref_relayItems.value[index].$el)
+        context.emit('requestScrollToBottom', ref_relayItems.value[index]?.$el)
       );
     }
 
