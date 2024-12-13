@@ -11,21 +11,21 @@
     "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
-    "firebase": "^10.13.2",
-    "pinia": "^2.2.2",
-    "vue": "^3.4.37",
-    "vue-router": "^4.0.13"
+    "firebase": "^11.1.0",
+    "pinia": "^2.3.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.1.2",
-    "eslint": "^9.11.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
-    "gh-pages": "^6.1.1",
-    "prettier": "^3.3.3",
+    "gh-pages": "^6.2.0",
+    "prettier": "^3.4.2",
     "prettier-plugin-vue": "^1.1.6",
-    "typescript": "^5.5.3",
-    "vite": "^5.4.1",
-    "vue-tsc": "^2.0.29"
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vue-tsc": "^2.1.10"
   }
 }
