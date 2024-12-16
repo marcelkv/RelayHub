@@ -14,33 +14,28 @@ export default defineComponent({
 
 <template>
   <div class="home">
-    <div class="tile boards">
-      <router-link to="/schedules" class="task">
-        <span
-          ><icon-raspberry
-            v-bind:text="'Boards'"
-            v-bind:strokeColor="'deeppink'"
-            v-bind:fontSize="'22px'" /></span
-      ></router-link>
-    </div>
-    <div class="tile relays">
-      <router-link to="/schedules" class="task">
-        <span
-          ><icon-light-switch
-            v-bind:text="'Relays'"
-            v-bind:fontSize="'22px'" /></span
-      ></router-link>
-    </div>
+    <router-link to="/boards" class="tile boards">
+      <span
+        ><icon-raspberry
+          v-bind:text="'Boards'"
+          v-bind:strokeColor="'deeppink'"
+          v-bind:fontSize="'22px'"
+      /></span>
+    </router-link>
+    <router-link to="/relays" class="tile relays">
+      <span
+        ><icon-light-switch v-bind:text="'Relays'" v-bind:fontSize="'22px'"
+      /></span>
+    </router-link>
     <div v-if="false" class="tile groups"><span>Groups</span></div>
-    <div class="tile schedules">
-      <router-link to="/schedules" class="task">
-        <span
-          ><icon-schedule
-            v-bind:strokeColor="'orange'"
-            v-bind:text="'Schedules'"
-            v-bind:fontSize="'22px'" /></span
-      ></router-link>
-    </div>
+    <router-link to="/schedules" class="tile schedules">
+      <span
+        ><icon-schedule
+          v-bind:strokeColor="'orange'"
+          v-bind:text="'Schedules'"
+          v-bind:fontSize="'22px'"
+      /></span>
+    </router-link>
     <div v-if="false" class="tile more"><span>About</span></div>
   </div>
 </template>
