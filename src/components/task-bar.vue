@@ -1,9 +1,13 @@
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import IconHome from '../icons/icon-home.vue';
+import IconLightSwitch from '../icons/icon-light-switch.vue';
+import IconSchedule from '../icons/icon-schedule.vue';
 
 export default defineComponent({
   name: 'task-bar',
+  components: { IconSchedule, IconLightSwitch, IconHome },
   setup() {
     const router = useRouter();
 
@@ -22,8 +26,15 @@ export default defineComponent({
 
 <template>
   <div class="task-bar">
-    <router-link class="task" to="/schedules">Schedules</router-link>
-    <router-link class="task" to="/relays">Relays</router-link>
+    <router-link to="/home" class="task"
+      ><icon-home v-bind:text="'Home'"></icon-home
+    ></router-link>
+    <router-link to="/relays" class="task">
+      <icon-light-switch v-bind:text="'Relays'"></icon-light-switch>
+    </router-link>
+    <router-link to="/schedules" class="task"
+      ><icon-schedule v-bind:text="'Schedules'"
+    /></router-link>
   </div>
 </template>
 
@@ -41,24 +52,13 @@ export default defineComponent({
   outline: none;
 
   .task {
-    color: white;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid black;
-    box-sizing: border-box;
+    --size: 50px;
+    height: var(--size);
+    width: var(--size);
+  }
 
-    &:hover {
-      border-color: rgba(255, 255, 255, 0.3);
-      background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    &:focus {
-      outline: none;
-    }
+  a {
+    text-decoration: none;
   }
 }
 </style>
