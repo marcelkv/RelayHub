@@ -5,6 +5,7 @@ export const usePageStore = defineStore('page', () => {
   const currentPage = ref<string>('relays');
 
   const pageTitles: Record<string, string> = {
+    home: 'Relay Hub',
     relays: 'Relay Control',
     schedules: 'Task Schedules',
   };
