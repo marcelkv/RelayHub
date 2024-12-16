@@ -5,21 +5,23 @@ export default defineComponent({
   props: {
     color: { type: String, default: 'white' },
     text: { type: String, default: '' },
+    fontSize: { type: String, default: '11px' },
   },
   setup(props) {
     const iconLightSwitchStyle = computed<CSSProperties>(() => {
       return {
         '--icon-color': props.color,
+        fontSize: props.fontSize,
       };
     });
 
-    return { iconHomeStyle: iconLightSwitchStyle };
+    return { iconLightSwitchStyle: iconLightSwitchStyle };
   },
 });
 </script>
 
 <template>
-  <div class="icon-light-switch" v-bind:style="iconHomeStyle">
+  <div class="icon-light-switch" v-bind:style="iconLightSwitchStyle">
     <svg
       fill="#000000"
       viewBox="0 0 64 64"
@@ -74,7 +76,6 @@ export default defineComponent({
   .text {
     height: 20%;
     color: var(--icon-color);
-    font-size: 11px;
     font-family: Arial, sans-serif;
   }
 }

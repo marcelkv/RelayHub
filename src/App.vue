@@ -7,10 +7,11 @@ import Schedules from './pages/schedules.vue';
 import { useUserStore } from './stores/user-store.ts';
 import { usePageStore } from './stores/page-store.ts';
 import TopBar from './components/top-bar.vue';
+import Home from './pages/home.vue';
 
 export default defineComponent({
   name: 'App',
-  components: { TopBar, Schedules, Relays, TaskBar, SignIn },
+  components: { Home, TopBar, Schedules, Relays, TaskBar, SignIn },
   setup() {
     const userStore = useUserStore();
     const pageStore = usePageStore();
@@ -43,6 +44,7 @@ export default defineComponent({
     <div v-if="signedIn" class="signed-in">
       <top-bar />
       <div class="body" ref="ref_body">
+        <home v-if="pageStore.currentPage === 'home'" />
         <relays
           v-if="pageStore.currentPage === 'relays'"
           v-on:requestScrollToBottom="scrollToBottom"

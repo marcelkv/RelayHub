@@ -4,22 +4,26 @@ import { computed, CSSProperties, defineComponent } from 'vue';
 export default defineComponent({
   props: {
     color: { type: String, default: 'white' },
+    strokeColor: { type: String, default: 'black' },
     text: { type: String, default: '' },
+    fontSize: { type: String, default: '11px' },
   },
   setup(props) {
-    const iconHomeStyle = computed<CSSProperties>(() => {
+    const iconScheduleStyle = computed<CSSProperties>(() => {
       return {
         '--icon-color': props.color,
+        '--icon-stroke-color': props.strokeColor,
+        fontSize: props.fontSize,
       };
     });
 
-    return { iconHomeStyle };
+    return { iconScheduleStyle };
   },
 });
 </script>
 
 <template>
-  <div class="icon-schedule" v-bind:style="iconHomeStyle">
+  <div class="icon-schedule" v-bind:style="iconScheduleStyle">
     <svg
       viewBox="0 0 24 24"
       stroke-width="3"
@@ -82,12 +86,12 @@ export default defineComponent({
 
   svg {
     fill: var(--icon-color);
+    stroke: var(--icon-stroke-color);
     height: 80%;
   }
   .text {
     height: 20%;
     color: var(--icon-color);
-    font-size: 11px;
     font-family: Arial, sans-serif;
   }
 }
