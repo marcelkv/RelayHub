@@ -3,12 +3,18 @@ import Relays from './pages/relays.vue';
 import Schedules from './pages/schedules.vue';
 import { usePageStore } from './stores/page-store.ts';
 import Home from './pages/home.vue';
+import Boards from './pages/boards.vue';
 
 const routes = [
   {
     path: '/home',
     name: 'home',
     component: Home,
+  },
+  {
+    path: '/boards',
+    name: 'boards',
+    component: Boards,
   },
   {
     path: '/relays',

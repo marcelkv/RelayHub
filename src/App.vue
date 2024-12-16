@@ -8,10 +8,11 @@ import { useUserStore } from './stores/user-store.ts';
 import { usePageStore } from './stores/page-store.ts';
 import TopBar from './components/top-bar.vue';
 import Home from './pages/home.vue';
+import Boards from './pages/boards.vue';
 
 export default defineComponent({
   name: 'App',
-  components: { Home, TopBar, Schedules, Relays, TaskBar, SignIn },
+  components: { Boards, Home, TopBar, Schedules, Relays, TaskBar, SignIn },
   setup() {
     const userStore = useUserStore();
     const pageStore = usePageStore();
@@ -45,6 +46,7 @@ export default defineComponent({
       <top-bar />
       <div class="body" ref="ref_body">
         <home v-if="pageStore.currentPage === 'home'" />
+        <boards v-if="pageStore.currentPage === 'boards'" />
         <relays
           v-if="pageStore.currentPage === 'relays'"
           v-on:requestScrollToBottom="scrollToBottom"
