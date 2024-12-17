@@ -1,15 +1,43 @@
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, onMounted } from 'vue';
+import { useBoardStore } from '../stores/board-store';
+import Spinner from '../components/spinner.vue';
+import Board from '../components/board.vue';
 
 export default defineComponent({
+  components: { Board, Spinner },
   setup() {
-    return {};
+    const boardStore = useBoardStore();
+
+    onMounted(() => {
+      boardStore.loadBoards();
+      boardStore.clearSelectedBoard();
+    });
+
+    return {
+      boardStore,
+    };
   },
 });
 </script>
 
 <template>
-  <div class="boards"></div>
+  <div class="boards">
+    <spinner
+      v-if="boardStore.loadingBoards"
+      :spinner-size="'20px'"
+      :with-text="true"
+    />
+    <div v-else>
+      <board
+        v-for="board in boardStore.boards"
+        v-bind:key="board.id"
+        v-bind:board="board"
+        v-bind:pinConfigs="boardStore.pinConfigs"
+        v-bind:isSelected="!!boardStore.selectedBoard && !boardStore.loading"
+      />
+    </div>
+  </div>
 </template>
 
 <style scoped>
