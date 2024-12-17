@@ -34,7 +34,9 @@ export default defineComponent({
         v-bind:key="board.id"
         v-bind:board="board"
         v-bind:pinConfigs="boardStore.pinConfigs"
-        v-bind:isSelected="!!boardStore.selectedBoard && !boardStore.loading"
+        v-bind:isSelected="
+          !!boardStore.selectedBoard && !boardStore.loadingBoards
+        "
       />
     </div>
   </div>

@@ -35,16 +35,16 @@ export default defineComponent({
         .replace(',', ' -');
     }
 
-    function toggleBoard(board: Board) {
+    async function toggleBoard(board: Board): Promise<void> {
       if (boardStore.selectedBoard === board) {
         boardStore.clearSelectedBoard();
       } else {
         boardStore.selectedBoard = board;
-        boardStore.loadBoardDetails(board.id);
+        await boardStore.loadBoardDetails(board.id);
       }
     }
 
-    return { createdAt, modifiedAt, toggleBoard };
+    return { createdAt, modifiedAt, boardStore, toggleBoard };
   },
 });
 </script>
@@ -58,7 +58,7 @@ export default defineComponent({
     >
       <div class="name">{{ $props.board.name }}</div>
     </div>
-    <div v-if="$props.isSelected">
+    <div v-if="$props.isSelected" class="selected">
       <div class="group model">
         <div class="label">Model:</div>
         <div class="text">{{ $props.board.model }}</div>
@@ -70,6 +70,24 @@ export default defineComponent({
       <div class="group modified-at">
         <div class="label">Modified:</div>
         <div class="text">{{ modifiedAt }}</div>
+      </div>
+      <div class="pin-configs">
+        <div class="pin-config header">
+          <div class="label">Pin</div>
+          <div class="label">Mode</div>
+          <div class="label">Relay Name</div>
+        </div>
+        <div
+          class="pin-config"
+          v-for="pinConfig in boardStore.pinConfigs"
+          v-bind:key="pinConfig.id"
+        >
+          <div class="val">{{ pinConfig.pinNumber }}</div>
+          <div class="val">
+            {{ pinConfig.mode === 'output' ? 'OUT' : 'IN' }}
+          </div>
+          <div class="val">{{ pinConfig.relayName }}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -116,5 +134,43 @@ export default defineComponent({
   .name {
     padding: 0 10px;
   }
+}
+
+.selected {
+  width: 100%;
+}
+
+.pin-configs {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.pin-config {
+  display: contents;
+}
+
+.pin-config.header {
+  font-weight: bold;
+  background-color: #f0f8ff;
+}
+
+.pin-config.header .label {
+  text-align: center;
+  padding: 5px 0;
+  border-bottom: 2px solid lightblue;
+}
+
+.pin-config .val {
+  text-align: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.pin-config:last-child .val {
+  border-bottom: none;
 }
 </style>
