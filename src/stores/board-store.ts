@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
+  addPinConfigToDB,
   fetchBoards,
   fetchPinConfigsForBoard,
+  updatePinConfigInDB,
 } from '../services/board-service';
 
 import { Board } from '../types/board.ts';
@@ -61,6 +63,20 @@ export const useBoardStore = defineStore('board', () => {
     pinConfigs.value = [];
   };
 
+  async function savePinConfig(pinConfig: PinConfig): Promise<void> {
+    try {
+      if (pinConfig.id) {
+        await updatePinConfigInDB(pinConfig.id, { mode: pinConfig.mode });
+      } else {
+        const newPinConfig = await addPinConfigToDB(pinConfig);
+        pinConfigs.value.push(newPinConfig);
+      }
+    } catch (error) {
+      console.error('Error saving PinConfig:', error);
+      throw error;
+    }
+  }
+
   return {
     boards,
     selectedBoard,
@@ -70,6 +86,7 @@ export const useBoardStore = defineStore('board', () => {
     error,
     loadBoards,
     loadBoardDetails,
+    savePinConfig,
     clearSelectedBoard,
   };
 });

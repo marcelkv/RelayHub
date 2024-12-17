@@ -44,7 +44,16 @@ export default defineComponent({
       }
     }
 
-    return { createdAt, modifiedAt, boardStore, toggleBoard };
+    async function toggleMode(pinConfig: PinConfig): Promise<void> {
+      if (!pinConfig) {
+        return;
+      }
+
+      pinConfig.mode = pinConfig.mode === 'output' ? 'input' : 'output';
+      await boardStore.savePinConfig(pinConfig);
+    }
+
+    return { createdAt, modifiedAt, boardStore, toggleBoard, toggleMode };
   },
 });
 </script>
@@ -83,7 +92,7 @@ export default defineComponent({
           v-bind:key="pinConfig.id"
         >
           <div class="val">{{ pinConfig.pinNumber }}</div>
-          <div class="val">
+          <div class="val" v-on:click="toggleMode(pinConfig)">
             {{ pinConfig.mode === 'output' ? 'OUT' : 'IN' }}
           </div>
           <div class="val">{{ pinConfig.relayName }}</div>
