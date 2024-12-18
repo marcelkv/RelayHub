@@ -2,13 +2,12 @@ import {
   getFirestore,
   collection,
   getDocs,
-  deleteDoc,
+  getDoc,
   query,
   where,
-  addDoc,
-  updateDoc,
   doc,
-  onSnapshot,
+  writeBatch,
+  serverTimestamp,
 } from 'firebase/firestore';
 import app from '../../firebaseConfig.ts';
 import { getAuth } from 'firebase/auth';
@@ -53,11 +52,9 @@ export async function fetchPinConfigsForBoard(
     throw new Error('User is not authenticated');
   }
 
-  const pinConfigsRef = collection(db, 'pinConfigs');
-
   try {
     const q = query(
-      pinConfigsRef,
+      pinConfigsCollection,
       where('uid', '==', user.uid),
       where('boardId', '==', boardId)
     );
@@ -65,11 +62,12 @@ export async function fetchPinConfigsForBoard(
     return querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
-        id: doc.id,
+        uid: data.uid,
         mode: data.mode,
         boardId: data.boardId,
         pinNumber: data.pinNumber,
         relayId: data.relayId,
+        relayName: data.relayName,
       } as PinConfig;
     });
   } catch (error) {
@@ -78,7 +76,11 @@ export async function fetchPinConfigsForBoard(
   }
 }
 
-export async function addBoardToDB(newBoard: Partial<Board>): Promise<Board> {
+export async function addBoardWithPinsToDB(
+  name: string,
+  model: string,
+  numberPins: number
+): Promise<Board> {
   const auth = getAuth(app);
   const user = auth.currentUser;
 
@@ -86,116 +88,48 @@ export async function addBoardToDB(newBoard: Partial<Board>): Promise<Board> {
     throw new Error('User is not authenticated');
   }
 
-  const boardWithUID = {
-    ...newBoard,
+  if (numberPins <= 0) {
+    throw new Error('Number of pins must be greater than 0');
+  }
+
+  const batch = writeBatch(db);
+  const boardRef = doc(collection(db, 'boards'));
+  const boardData = {
     uid: user.uid,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    name: name,
+    model: model,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
+  batch.set(boardRef, boardData);
 
-  const docRef = await addDoc(boardsCollection, boardWithUID);
-  return { id: docRef.id, ...boardWithUID } as Board;
-}
+  for (let i = 1; i <= numberPins; i++) {
+    const pinConfigRef = doc(collection(db, 'pinConfigs'));
+    const pinConfigData: Partial<PinConfig> = {
+      uid: user.uid,
+      pinNumber: i,
+      mode: 'input',
+      boardId: boardRef.id,
+    };
 
-export async function updateBoardInDB(
-  id: string,
-  updates: Partial<Board>
-): Promise<void> {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
+    batch.set(pinConfigRef, pinConfigData);
   }
 
-  const boardDoc = doc(db, 'boards', id);
-  const updatedData = { ...updates, updatedAt: new Date() };
+  await batch.commit();
 
-  await updateDoc(boardDoc, updatedData);
-}
+  const savedBoardSnap = await getDoc(boardRef);
 
-export async function deleteBoardFromDB(id: string): Promise<void> {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
+  if (!savedBoardSnap.exists()) {
+    throw new Error('Failed to retrieve the created board');
   }
 
-  const boardDoc = doc(db, 'boards', id);
-  await deleteDoc(boardDoc);
-}
-
-export async function addPinConfigToDB(
-  newPinConfig: Partial<PinConfig>
-): Promise<PinConfig> {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
-  }
-
-  const docRef = await addDoc(pinConfigsCollection, newPinConfig);
-  return { id: docRef.id, ...newPinConfig } as PinConfig;
-}
-
-export async function updatePinConfigInDB(
-  id: string,
-  updates: Partial<PinConfig>
-): Promise<void> {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
-  }
-
-  const pinConfigDoc = doc(db, 'pinConfigs', id);
-  await updateDoc(pinConfigDoc, updates);
-}
-
-export async function deletePinConfigFromDB(id: string): Promise<void> {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
-  }
-
-  const pinConfigDoc = doc(db, 'pinConfigs', id);
-  await deleteDoc(pinConfigDoc);
-}
-
-export function onBoardChange(
-  id: string,
-  onUpdate: (updatedBoard: Board) => void
-): () => void {
-  const auth = getAuth(app);
-  const user = auth.currentUser;
-
-  if (!user) {
-    throw new Error('User is not authenticated');
-  }
-
-  const boardDoc = doc(db, 'boards', id);
-
-  return onSnapshot(boardDoc, docSnapshot => {
-    if (docSnapshot.exists()) {
-      const data = docSnapshot.data();
-
-      const updatedBoard: Board = {
-        id: docSnapshot.id,
-        uid: data.uid,
-        model: data.model,
-        name: data.name,
-        updatedAt: data.updatedAt.toDate(),
-        createdAt: data.createdAt.toDate(),
-      };
-
-      onUpdate(updatedBoard);
-    } else {
-      console.error('Board not found');
-    }
-  });
+  const savedBoardData = savedBoardSnap.data();
+  return {
+    id: boardRef.id,
+    uid: savedBoardData.uid,
+    name: savedBoardData.name,
+    model: savedBoardData.model,
+    createdAt: savedBoardData.createdAt.toDate(),
+    updatedAt: savedBoardData.updatedAt.toDate(),
+  } as Board;
 }

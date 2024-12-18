@@ -5,4 +5,5 @@ export interface Relay {
   state: boolean;
   maxOnTime_s?: number;
   turnedOnAt?: Date;
+  boardId?: string;
 }

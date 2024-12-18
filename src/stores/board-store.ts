@@ -1,10 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
-  addPinConfigToDB,
+  addBoardWithPinsToDB,
   fetchBoards,
   fetchPinConfigsForBoard,
-  updatePinConfigInDB,
 } from '../services/board-service';
 
 import { Board } from '../types/board.ts';
@@ -29,6 +28,24 @@ export const useBoardStore = defineStore('board', () => {
       error.value = 'Unable to load boards.';
     } finally {
       loadingBoards.value = false;
+    }
+  };
+
+  const addBoardWithPins = async (
+    name: string,
+    model: string,
+    numberPins: number
+  ) => {
+    try {
+      if (numberPins <= 0) {
+        console.error('Number of pins must be greater than 0');
+      }
+
+      const board = await addBoardWithPinsToDB(name, model, numberPins);
+      console.log('Board added successfully with pins:', board);
+    } catch (err) {
+      console.error('Failed to add new board:', err);
+      error.value = 'Unable to add new board.';
     }
   };
 
@@ -63,20 +80,6 @@ export const useBoardStore = defineStore('board', () => {
     pinConfigs.value = [];
   };
 
-  async function savePinConfig(pinConfig: PinConfig): Promise<void> {
-    try {
-      if (pinConfig.id) {
-        await updatePinConfigInDB(pinConfig.id, { mode: pinConfig.mode });
-      } else {
-        const newPinConfig = await addPinConfigToDB(pinConfig);
-        pinConfigs.value.push(newPinConfig);
-      }
-    } catch (error) {
-      console.error('Error saving PinConfig:', error);
-      throw error;
-    }
-  }
-
   return {
     boards,
     selectedBoard,
@@ -86,7 +89,7 @@ export const useBoardStore = defineStore('board', () => {
     error,
     loadBoards,
     loadBoardDetails,
-    savePinConfig,
+    addBoardWithPins,
     clearSelectedBoard,
   };
 });
