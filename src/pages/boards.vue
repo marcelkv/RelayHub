@@ -1,21 +1,34 @@
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
 import { useBoardStore } from '../stores/board-store';
 import Spinner from '../components/spinner.vue';
 import Board from '../components/board.vue';
+import ButtonDefault from '../components/button-default.vue';
 
 export default defineComponent({
-  components: { Board, Spinner },
+  components: { ButtonDefault, Board, Spinner },
   setup() {
     const boardStore = useBoardStore();
+    const requestAddNewBoard = ref<boolean>(false);
 
     onMounted(() => {
       boardStore.loadBoards();
       boardStore.clearSelectedBoard();
     });
 
+    async function requestAddNew(): Promise<void> {
+
+    }
+
+    async function addNewBoard(): Promise<void> {
+      await boardStore.addBoardWithPins(name, model, numberPins);
+    }
+
     return {
       boardStore,
+      requestAddNewBoard,
+      requestAddNew,
+      addNewBoard,
     };
   },
 });
@@ -38,7 +51,12 @@ export default defineComponent({
           !!boardStore.selectedBoard && !boardStore.loadingBoards
         "
       />
+      <button-default
+        v-bind:text="'Add new board'"
+        v-on:click="requestAddNew"
+      />
     </div>
+    <div v-if="requestAddNewBoard" class="add-new-board"></div>
   </div>
 </template>
 
