@@ -2,13 +2,17 @@
 import { defineComponent, onMounted, ref } from 'vue';
 import { useBoardStore } from '../stores/board-store';
 import Spinner from '../components/spinner.vue';
-import Board from '../components/board.vue';
 import ButtonDefault from '../components/button-default.vue';
 import Dropdown from '../components/drop-down.vue';
+import { useRouter } from 'vue-router';
+import { Board } from '../types/board.ts';
+import { usePageStore } from '../stores/page-store.ts';
 
 export default defineComponent({
-  components: { ButtonDefault, Board, Spinner, Dropdown },
+  components: { ButtonDefault, Spinner, Dropdown },
   setup() {
+    const router = useRouter();
+    const pageStore = usePageStore();
     const boardStore = useBoardStore();
     const requestAddNewBoard = ref<boolean>(false);
     const name = ref<string>('');
@@ -43,6 +47,12 @@ export default defineComponent({
       requestAddNewBoard.value = true;
     }
 
+    function requestBoard(board: Board): void {
+      boardStore.selectedBoard = board;
+      pageStore.setNavigateBackPage('boards');
+      router.push({ name: 'board' });
+    }
+
     async function addNewBoard() {
       if (!name.value || !selectedModel.value) {
         errorMessage.value = 'Please fill in all fields.';
@@ -68,6 +78,7 @@ export default defineComponent({
       raspberryPiModels,
       errorMessage,
       requestAddNew,
+      requestBoard,
       addNewBoard,
     };
   },
@@ -82,18 +93,24 @@ export default defineComponent({
       v-bind:withText="true"
     />
     <div v-else>
-      <board
+      <div
+        class="board-name-wrapper"
         v-for="board in boardStore.boards"
         v-bind:key="board.id"
-        v-bind:board="board"
-        v-bind:pinConfigs="boardStore.pinConfigs"
-        v-bind:isSelected="boardStore.selectedBoard === board"
-      />
+        v-on:click="requestBoard(board)"
+      >
+        {{ board.name }}
+      </div>
       <button-default
         v-bind:text="'Add new board'"
         v-on:click="requestAddNew"
       />
     </div>
+    <board-popup
+      v-if="boardStore.selectedBoard"
+      v-bind:board="boardStore.selectedBoard"
+      v-bind:pinConfigs="boardStore.pinConfigs"
+    />
     <div v-if="requestAddNewBoard" class="add-new-board">
       <div class="popup">
         <h3>Add New Board</h3>
@@ -126,6 +143,17 @@ export default defineComponent({
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  .board-name-wrapper {
+    height: 40px;
+    border: 1px solid lightblue;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 5px;
+    padding: 10px 20px;
+  }
 }
 
 .add-new-board {

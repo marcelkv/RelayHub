@@ -4,6 +4,7 @@ import Schedules from './pages/schedules.vue';
 import { usePageStore } from './stores/page-store.ts';
 import Home from './pages/home.vue';
 import Boards from './pages/boards.vue';
+import Board from './pages/board.vue';
 
 const routes = [
   {
@@ -15,6 +16,11 @@ const routes = [
     path: '/boards',
     name: 'boards',
     component: Boards,
+  },
+  {
+    path: '/board/',
+    name: 'board',
+    component: Board,
   },
   {
     path: '/relays',

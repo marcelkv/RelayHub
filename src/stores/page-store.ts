@@ -3,10 +3,12 @@ import { ref, computed } from 'vue';
 
 export const usePageStore = defineStore('page', () => {
   const currentPage = ref<string>('relays');
+  const navigateBackPage = ref<string | null>();
 
   const pageTitles: Record<string, string> = {
     home: 'Relay Hub',
     boards: 'Boards',
+    board: 'Board',
     relays: 'Relay Control',
     schedules: 'Task Schedules',
   };
@@ -19,5 +21,15 @@ export const usePageStore = defineStore('page', () => {
     return pageTitles[currentPage.value] || 'Unknown Page';
   });
 
-  return { currentPage, setPage, currentPageTitle };
+  const setNavigateBackPage = (value: string | null) => {
+    navigateBackPage.value = value;
+  };
+
+  return {
+    currentPage,
+    currentPageTitle,
+    navigateBackPage,
+    setPage,
+    setNavigateBackPage,
+  };
 });

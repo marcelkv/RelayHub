@@ -12,7 +12,7 @@ import { useRelayStore } from './relay-store.ts';
 
 export const useBoardStore = defineStore('board', () => {
   const boards = ref<Board[]>([]);
-  const selectedBoard = ref<Board | null>(null);
+  const selectedBoard = ref<Board | null | undefined>(null);
   const pinConfigs = ref<PinConfig[]>([]);
   const loadingBoards = ref(false);
   const loadingPinConfigs = ref(false);
@@ -49,12 +49,14 @@ export const useBoardStore = defineStore('board', () => {
     }
   };
 
-  const loadBoardDetails = async (boardId: string) => {
+  const loadBoardDetails = async () => {
     try {
-      loadingPinConfigs.value = true;
-      const board = boards.value.find(b => b.id === boardId);
-      selectedBoard.value = board || null;
+      if (!selectedBoard.value) {
+        return;
+      }
 
+      loadingPinConfigs.value = true;
+      const boardId = selectedBoard.value.id;
       if (selectedBoard.value) {
         const result = await fetchPinConfigsForBoard(boardId);
         pinConfigs.value = result
