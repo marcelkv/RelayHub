@@ -12,11 +12,11 @@ import { useRelayStore } from './relay-store.ts';
 
 export const useBoardStore = defineStore('board', () => {
   const boards = ref<Board[]>([]);
-  const selectedBoard = ref<Board | null | undefined>(null);
+  const selectedBoard = ref<Board>(null);
   const pinConfigs = ref<PinConfig[]>([]);
   const loadingBoards = ref(false);
   const loadingPinConfigs = ref(false);
-  const error = ref<string | null>(null);
+  const error = ref<string>(null);
   const relayStore = useRelayStore();
 
   const loadBoards = async () => {

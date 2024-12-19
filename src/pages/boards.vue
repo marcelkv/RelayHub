@@ -106,11 +106,6 @@ export default defineComponent({
         v-on:click="requestAddNew"
       />
     </div>
-    <board-popup
-      v-if="boardStore.selectedBoard"
-      v-bind:board="boardStore.selectedBoard"
-      v-bind:pinConfigs="boardStore.pinConfigs"
-    />
     <div v-if="requestAddNewBoard" class="add-new-board">
       <div class="popup">
         <h3>Add New Board</h3>
