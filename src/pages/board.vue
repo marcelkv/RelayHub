@@ -1,6 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted } from 'vue';
 import { useBoardStore } from '../stores/board-store.ts';
+import { PinConfig } from '../types/pin-config';
 
 export default defineComponent({
   props: {},
@@ -38,11 +39,13 @@ export default defineComponent({
         .replace(/\//g, '.');
     }
 
-    function deleteBoard() {
-
+    async function switchMode(pinConfig: PinConfig): Promise<void> {
+      await boardStore.updatePinConfigMode(pinConfig);
     }
 
-    return { boardStore, createdAt, modifiedAt, deleteBoard };
+    function deleteBoard() {}
+
+    return { boardStore, createdAt, modifiedAt, switchMode, deleteBoard };
   },
 });
 </script>
@@ -67,7 +70,7 @@ export default defineComponent({
         v-bind:key="config.pinNumber"
       >
         <div class="table-cell">{{ config.pinNumber }}</div>
-        <div class="table-cell">
+        <div class="table-cell" v-on:click="switchMode(config)">
           {{ config.mode === 'output' ? 'OUT' : 'IN' }}
         </div>
         <div class="table-cell relay-name">
@@ -113,6 +116,8 @@ export default defineComponent({
 .table-row {
   display: flex;
   border-bottom: 1px solid lightblue;
+  height: 50px;
+  align-items: center;
 }
 
 .table-cell {

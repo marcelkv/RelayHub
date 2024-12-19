@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
-  addBoardWithPinsToDB,
+  addBoardWithPinsToDB, fetchBoard,
   fetchBoards,
   fetchPinConfigsForBoard,
+  updatePinConfigModeInDB,
 } from '../services/board-service';
 
 import { Board } from '../types/board.ts';
@@ -82,6 +83,32 @@ export const useBoardStore = defineStore('board', () => {
     pinConfigs.value = [];
   };
 
+  const updatePinConfigMode = async (pinConfig: PinConfig): Promise<void> => {
+    try {
+      pinConfig.mode = pinConfig.mode === 'input' ? 'output' : 'input';
+      await updatePinConfigModeInDB(pinConfig);
+      const index = pinConfigs.value.findIndex(p => p.id === pinConfig.id);
+      if (index !== -1) {
+        pinConfigs.value[index] = { ...pinConfig };
+      }
+
+      const boardIndex = boards.value.findIndex(
+        b => b.id === pinConfig.boardId
+      );
+      if (boardIndex !== -1) {
+        const updatedBoard = await fetchBoard(pinConfig.boardId);
+        boards.value[boardIndex] = { ...updatedBoard };
+
+        if (selectedBoard.value?.id === pinConfig.boardId) {
+          selectedBoard.value = { ...updatedBoard };
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update PinConfig mode:', err);
+      error.value = 'Unable to update PinConfig.';
+    }
+  };
+
   return {
     boards,
     selectedBoard,
@@ -92,6 +119,7 @@ export const useBoardStore = defineStore('board', () => {
     loadBoards,
     loadBoardDetails,
     addBoardWithPins,
+    updatePinConfigMode,
     clearSelectedBoard,
   };
 });

@@ -8,6 +8,7 @@ import {
   doc,
   writeBatch,
   serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import app from '../../firebaseConfig.ts';
 import { getAuth } from 'firebase/auth';
@@ -42,6 +43,32 @@ export async function fetchBoards(): Promise<Board[]> {
   });
 }
 
+export async function fetchBoard(boardId: string): Promise<Board> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const boardRef = doc(db, 'boards', boardId);
+  const boardSnap = await getDoc(boardRef);
+
+  if (!boardSnap.exists()) {
+    throw new Error(`Board with ID ${boardId} does not exist`);
+  }
+
+  const boardData = boardSnap.data();
+  return {
+    id: boardId,
+    uid: boardData.uid,
+    name: boardData.name,
+    model: boardData.model,
+    createdAt: boardData.createdAt.toDate(),
+    updatedAt: boardData.updatedAt.toDate(),
+  } as Board;
+}
+
 export async function fetchPinConfigsForBoard(
   boardId: string
 ): Promise<PinConfig[]> {
@@ -62,6 +89,7 @@ export async function fetchPinConfigsForBoard(
     return querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
+        id: doc.id,
         uid: data.uid,
         mode: data.mode,
         boardId: data.boardId,
@@ -132,4 +160,38 @@ export async function addBoardWithPinsToDB(
     createdAt: savedBoardData.createdAt.toDate(),
     updatedAt: savedBoardData.updatedAt.toDate(),
   } as Board;
+}
+
+export async function updatePinConfigModeInDB(
+  pinConfig: PinConfig
+): Promise<void> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  if (!pinConfig.id) {
+    throw new Error('PinConfig ID is missing');
+  }
+
+  if (!pinConfig.boardId) {
+    throw new Error('Board ID is missing in PinConfig');
+  }
+
+  const db = getFirestore(app);
+  const pinConfigRef = doc(db, 'pinConfigs', pinConfig.id);
+  const boardRef = doc(db, 'boards', pinConfig.boardId);
+  const batch = writeBatch(db);
+
+  batch.update(pinConfigRef, {
+    mode: pinConfig.mode,
+  });
+
+  batch.update(boardRef, {
+    updatedAt: serverTimestamp(),
+  });
+
+  await batch.commit();
 }
