@@ -1,14 +1,22 @@
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue';
+import { computed, defineComponent, onMounted, ref } from 'vue';
 import { useBoardStore } from '../stores/board-store.ts';
 import { PinConfig } from '../types/pin-config';
+import DropDown from '../components/drop-down.vue';
+import PopupSelectRelay from '../components/popup -select-relay.vue';
+import { useRelayStore } from '../stores/relay-store';
 
 export default defineComponent({
+  components: { PopupSelectRelay, DropDown },
   props: {},
   emits: [],
   setup(_props, _context) {
     const boardStore = useBoardStore();
+    const relayStore = useRelayStore();
+    const selectedPinConfig = ref<PinConfig>(null);
+
     onMounted(async () => {
+      selectedPinConfig.value = null;
       await boardStore.loadBoardDetails();
     });
 
@@ -39,13 +47,104 @@ export default defineComponent({
         .replace(/\//g, '.');
     }
 
-    async function switchMode(pinConfig: PinConfig): Promise<void> {
-      await boardStore.updatePinConfigMode(pinConfig);
-    }
-
     function deleteBoard() {}
 
-    return { boardStore, createdAt, modifiedAt, switchMode, deleteBoard };
+    function requestEditPinConfig(pinConfig: PinConfig): void {
+      if (selectedPinConfig.value) {
+        selectedPinConfig.value = null;
+      }
+
+      selectedPinConfig.value = pinConfig;
+    }
+
+    async function onSaveSelectRelay(
+      mode: string,
+      relayId: string
+    ): Promise<void> {
+      if (!mode || !relayId) {
+        onCancelSelectRelay();
+        return;
+      }
+
+      const pinConfig = boardStore.pinConfigs.find(
+        pinConfig => pinConfig === selectedPinConfig.value
+      );
+
+      if (!pinConfig) {
+        onCancelSelectRelay();
+        return;
+      }
+
+      const relaysToUpdate: Relay[] = [];
+
+      if (pinConfig.relayId && selectedPinConfig.value.relayId !== relayId) {
+        const initialRelay = relayStore.relays.find(
+          r => r.id === pinConfig.relayId
+        );
+        const newRelay =
+          relayId === 'none'
+            ? null
+            : relayStore.relays.find(r => r.id === relayId);
+
+        if (!initialRelay) {
+          onCancelSelectRelay();
+          return;
+        }
+
+        initialRelay.boardId = null;
+
+        if (newRelay) {
+          newRelay.boardId = pinConfig.boardId;
+          pinConfig.relayId = newRelay.id;
+          pinConfig.relayName = newRelay.name;
+        } else {
+          pinConfig.relayId = null;
+          pinConfig.relayName = null;
+        }
+
+        relaysToUpdate.push(initialRelay);
+        relaysToUpdate.push(newRelay);
+      } else if (pinConfig.relayId) {
+        pinConfig.mode = mode;
+      } else if (relayId === 'none') {
+        pinConfig.relayId = null;
+        pinConfig.relayName = null;
+      } else {
+        const newRelay =
+          relayId === 'none'
+            ? null
+            : relayStore.relays.find(r => r.id === relayId);
+
+        if (!newRelay) {
+          onCancelSelectRelay();
+          return;
+        }
+
+        newRelay.boardId = pinConfig.boardId;
+        pinConfig.relayId = newRelay.id;
+        pinConfig.relayName = newRelay.name;
+        relaysToUpdate.push(newRelay);
+      }
+
+      pinConfig.mode = mode;
+      await boardStore.updatePinConfigAndRelays(pinConfig, relaysToUpdate);
+      onCancelSelectRelay();
+    }
+
+    function onCancelSelectRelay(): void {
+      selectedPinConfig.value = null;
+    }
+
+    return {
+      boardStore,
+      createdAt,
+      modifiedAt,
+      selectedPinConfig,
+      requestEditPinConfig,
+      deleteBoard,
+      onSaveSelectRelay,
+      onCancelSelectRelay,
+    };
   },
 });
 </script>
@@ -70,17 +169,29 @@ export default defineComponent({
         v-bind:key="config.pinNumber"
       >
         <div class="table-cell">{{ config.pinNumber }}</div>
-        <div class="table-cell" v-on:click="switchMode(config)">
+        <div class="table-cell">
           {{ config.mode === 'output' ? 'OUT' : 'IN' }}
         </div>
-        <div class="table-cell relay-name">
-          {{ config.relayName }}
+        <div
+          class="table-cell relay-name"
+          v-on:click="requestEditPinConfig(config)"
+        >
+          {{ config.relayName ? config.relayName : 'None' }}
         </div>
       </div>
       <div class="table-row">
         <div class="delete-button" v-on:click="deleteBoard">Delete</div>
       </div>
     </div>
+    <popup-select-relay
+      v-if="selectedPinConfig"
+      v-bind:relayName="boardStore.selectedBoard?.name"
+      v-bind:pinNumber="selectedPinConfig.pinNumber"
+      v-bind:initialMode="selectedPinConfig.mode"
+      v-bind:initialRelayId="selectedPinConfig.relayId"
+      v-on:cancel="onCancelSelectRelay"
+      v-on:save="onSaveSelectRelay"
+    />
   </div>
 </template>
 

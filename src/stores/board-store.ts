@@ -5,7 +5,7 @@ import {
   fetchBoard,
   fetchBoards,
   fetchPinConfigsForBoard,
-  updatePinConfigModeInDB,
+  updatePinConfigModeAndRelayInDB,
 } from '../services/board-service';
 
 import { Board } from '../types/board.ts';
@@ -85,10 +85,12 @@ export const useBoardStore = defineStore('board', () => {
     pinConfigs.value = [];
   };
 
-  const updatePinConfigMode = async (pinConfig: PinConfig): Promise<void> => {
+  const updatePinConfigAndRelays = async (
+    pinConfig: PinConfig,
+    relays: Relay[]
+  ): Promise<void> => {
     try {
-      pinConfig.mode = pinConfig.mode === 'input' ? 'output' : 'input';
-      await updatePinConfigModeInDB(pinConfig);
+      await updatePinConfigModeAndRelayInDB(pinConfig, relays);
       const index = pinConfigs.value.findIndex(p => p.id === pinConfig.id);
       if (index !== -1) {
         pinConfigs.value[index] = { ...pinConfig };
@@ -121,7 +123,7 @@ export const useBoardStore = defineStore('board', () => {
     loadBoards,
     loadBoardDetails,
     addBoardWithPins,
-    updatePinConfigMode,
+    updatePinConfigAndRelays,
     clearSelectedBoard,
   };
 });

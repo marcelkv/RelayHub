@@ -206,7 +206,7 @@ export default defineComponent({
         justify-content: flex-start;
         align-items: center;
         border-radius: 4px;
-        border: 1px solid black;
+        border: 1px solid lightgray;
         margin: 7px;
 
         .option-text {
@@ -217,6 +217,7 @@ export default defineComponent({
 
           &.is-checked {
             background-color: lightgray;
+            border-radius: 4px;
           }
         }
       }

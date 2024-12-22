@@ -162,8 +162,9 @@ export async function addBoardWithPinsToDB(
   } as Board;
 }
 
-export async function updatePinConfigModeInDB(
-  pinConfig: PinConfig
+export async function updatePinConfigModeAndRelayInDB(
+  pinConfig: PinConfig,
+  relays: Relay[]
 ): Promise<void> {
   const auth = getAuth(app);
   const user = auth.currentUser;
@@ -180,13 +181,24 @@ export async function updatePinConfigModeInDB(
     throw new Error('Board ID is missing in PinConfig');
   }
 
-  const db = getFirestore(app);
   const pinConfigRef = doc(db, 'pinConfigs', pinConfig.id);
   const boardRef = doc(db, 'boards', pinConfig.boardId);
   const batch = writeBatch(db);
 
   batch.update(pinConfigRef, {
     mode: pinConfig.mode,
+    relayName: pinConfig.relayName,
+    relayId: pinConfig.relayId,
+  });
+
+  relays.forEach(relay => {
+    if (!relay.id) {
+      throw new Error('Relay ID is missing');
+    }
+    const relayRef = doc(db, 'relays', relay.id);
+    batch.update(relayRef, {
+      boardId: relay.boardId,
+    });
   });
 
   batch.update(boardRef, {
