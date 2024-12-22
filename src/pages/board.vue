@@ -5,15 +5,19 @@ import { PinConfig } from '../types/pin-config';
 import DropDown from '../components/drop-down.vue';
 import PopupSelectRelay from '../components/popup -select-relay.vue';
 import { useRelayStore } from '../stores/relay-store';
+import { useRouter } from 'vue-router';
+import PopupYesNo from '../components/popup-yes-no.vue';
 
 export default defineComponent({
-  components: { PopupSelectRelay, DropDown },
+  components: { PopupYesNo, PopupSelectRelay, DropDown },
   props: {},
   emits: [],
   setup(_props, _context) {
+    const router = useRouter();
     const boardStore = useBoardStore();
     const relayStore = useRelayStore();
     const selectedPinConfig = ref<PinConfig>(null);
+    const requestDeleteBoard = ref<boolean>(false);
 
     onMounted(async () => {
       selectedPinConfig.value = null;
@@ -47,7 +51,11 @@ export default defineComponent({
         .replace(/\//g, '.');
     }
 
-    function deleteBoard() {}
+    function deleteBoard() {
+      boardStore.deleteBoard(boardStore.selectedBoard.id);
+      router.push({ name: 'boards' });
+      requestDeleteBoard.value = false;
+    }
 
     function requestEditPinConfig(pinConfig: PinConfig): void {
       if (selectedPinConfig.value) {
@@ -140,6 +148,7 @@ export default defineComponent({
       createdAt,
       modifiedAt,
       selectedPinConfig,
+      requestDeleteBoard,
       requestEditPinConfig,
       deleteBoard,
       onSaveSelectRelay,
@@ -180,7 +189,9 @@ export default defineComponent({
         </div>
       </div>
       <div class="table-row">
-        <div class="delete-button" v-on:click="deleteBoard">Delete</div>
+        <div class="delete-button" v-on:click="requestDeleteBoard = true">
+          Delete
+        </div>
       </div>
     </div>
     <popup-select-relay
@@ -191,6 +202,12 @@ export default defineComponent({
       v-bind:initialRelayId="selectedPinConfig.relayId"
       v-on:cancel="onCancelSelectRelay"
       v-on:save="onSaveSelectRelay"
+    />
+    <popup-yes-no
+      v-if="requestDeleteBoard"
+      v-bind:text="`Are you sure you want to delete '${boardStore.selectedBoard.name}'?`"
+      v-on:yes="deleteBoard"
+      v-on:no="requestDeleteBoard = false"
     />
   </div>
 </template>

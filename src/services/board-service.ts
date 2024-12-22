@@ -207,3 +207,44 @@ export async function updatePinConfigModeAndRelayInDB(
 
   await batch.commit();
 }
+
+export async function deleteBoardFromDB(boardId: string): Promise<void> {
+  const auth = getAuth(app);
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error('User is not authenticated');
+  }
+
+  const boardRef = doc(db, 'boards', boardId);
+  const pinConfigsQuery = query(
+    collection(db, 'pinConfigs'),
+    where('boardId', '==', boardId),
+    where('uid', '==', user.uid)
+  );
+  const relaysQuery = query(
+    collection(db, 'relays'),
+    where('boardId', '==', boardId),
+    where('uid', '==', user.uid)
+  );
+
+  const batch = writeBatch(db);
+
+  try {
+    const pinConfigsSnapshot = await getDocs(pinConfigsQuery);
+    pinConfigsSnapshot.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    const relaysSnapshot = await getDocs(relaysQuery);
+    relaysSnapshot.forEach(doc => {
+      batch.update(doc.ref, { boardId: null });
+    });
+
+    batch.delete(boardRef);
+    await batch.commit();
+  } catch (error) {
+    console.error('Error deleting board and associated data:', error);
+    throw new Error('Failed to delete the board.');
+  }
+}

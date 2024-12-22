@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
   addBoardWithPinsToDB,
+  deleteBoardFromDB,
   fetchBoard,
   fetchBoards,
   fetchPinConfigsForBoard,
@@ -113,6 +114,24 @@ export const useBoardStore = defineStore('board', () => {
     }
   };
 
+  const deleteBoard = async (boardId: string): Promise<void> => {
+    try {
+      await deleteBoardFromDB(boardId);
+      const boardIndex = boards.value.findIndex(board => board.id === boardId);
+
+      if (boardIndex !== -1) {
+        boards.value.splice(boardIndex, 1);
+      }
+
+      if (selectedBoard.value?.id === boardId) {
+        clearSelectedBoard();
+      }
+    } catch (error) {
+      console.error('Failed to delete board:', error);
+      error.value = 'Unable to delete board.';
+    }
+  };
+
   return {
     boards,
     selectedBoard,
@@ -125,5 +144,6 @@ export const useBoardStore = defineStore('board', () => {
     addBoardWithPins,
     updatePinConfigAndRelays,
     clearSelectedBoard,
+    deleteBoard,
   };
 });
