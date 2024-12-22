@@ -40,8 +40,13 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, from, next) => {
   const pageStore = usePageStore();
+
+  if ((from.name as string) !== pageStore.navigateBackPage) {
+    pageStore.navigateBackPage = null;
+  }
+
   pageStore.setPage(to.name as string);
   next();
 });
