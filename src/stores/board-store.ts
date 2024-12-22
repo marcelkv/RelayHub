@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
-  addBoardWithPinsToDB, fetchBoard,
+  addBoardWithPinsToDB,
+  fetchBoard,
   fetchBoards,
   fetchPinConfigsForBoard,
   updatePinConfigModeInDB,
@@ -43,6 +44,7 @@ export const useBoardStore = defineStore('board', () => {
       }
 
       const board = await addBoardWithPinsToDB(name, model, numberPins);
+      boards.value.push(board);
       console.log('Board added successfully with pins:', board);
     } catch (err) {
       console.error('Failed to add new board:', err);
