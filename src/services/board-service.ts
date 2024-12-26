@@ -8,7 +8,6 @@ import {
   doc,
   writeBatch,
   serverTimestamp,
-  updateDoc,
 } from 'firebase/firestore';
 import app from '../../firebaseConfig.ts';
 import { getAuth } from 'firebase/auth';
@@ -102,6 +101,20 @@ export async function fetchPinConfigsForBoard(
     console.error('Error fetching pinConfigs:', error);
     throw error;
   }
+}
+
+export async function updateBoardInDB(
+  boardId: string,
+  name: string
+): Promise<void> {
+  const batch = writeBatch(db);
+  const boardRef = doc(db, 'boards', boardId);
+
+  batch.update(boardRef, {
+    name,
+    updatedAt: serverTimestamp(),
+  });
+  await batch.commit();
 }
 
 export async function addBoardWithPinsToDB(

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import {
   addBoardWithPinsToDB,
+  updateBoardInDB,
   deleteBoardFromDB,
   fetchBoard,
   fetchBoards,
@@ -31,6 +32,25 @@ export const useBoardStore = defineStore('board', () => {
       error.value = 'Unable to load boards.';
     } finally {
       loadingBoards.value = false;
+    }
+  };
+
+  const updateBoard = async (boardId: string, name: string): Promise<void> => {
+    try {
+      const boardIndex = boards.value.findIndex(b => b.id === boardId);
+      if (boardIndex === -1) {
+        return;
+      }
+
+      const existingBoard = boards.value[boardIndex];
+
+      await updateBoardInDB(boardId, name);
+
+      boards.value[boardIndex] = { ...existingBoard, name };
+      selectedBoard.value = boards.value[boardIndex];
+    } catch (err) {
+      console.error('Failed to update board:', err);
+      error.value = 'Unable to update board.';
     }
   };
 
@@ -144,6 +164,7 @@ export const useBoardStore = defineStore('board', () => {
     addBoardWithPins,
     updatePinConfigAndRelays,
     clearSelectedBoard,
+    updateBoard,
     deleteBoard,
   };
 });

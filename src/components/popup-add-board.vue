@@ -7,23 +7,48 @@ import {
   raspberryPiModels,
 } from '../resources/raspberry-pi-models';
 import { useBoardStore } from '../stores/board-store';
+import Board from '../pages/board.vue';
 
 export default defineComponent({
   components: { Dropdown, ButtonDefault },
   emits: ['boardAdded', 'cancel'],
-  props: {},
+  props: {
+    boardId: { type: String, default: null },
+  },
   setup(props, { emit }) {
     const boardStore = useBoardStore();
     const name = ref<string>('');
     const selectedModel = ref<RaspberryPiModel>(null);
+    const existingBoard = ref<Board>(null);
 
     onBeforeMount(() => {
-      clear();
+      if (props.boardId) {
+        existingBoard.value = boardStore.boards.find(
+          b => b.id === props.boardId
+        );
+      }
+
+      if (existingBoard.value) {
+        name.value = existingBoard.value.name;
+        selectedModel.value = raspberryPiModels.find(
+          model => model.value === existingBoard.value.model
+        );
+      } else {
+        clear();
+      }
     });
 
-    const canSave = computed<boolean>(
-      () => name.value && name.value.length > 1 && selectedModel.value
-    );
+    const canSave = computed<boolean>(() => {
+      if (
+        props.boardId &&
+        existingBoard.value.name === name.value.trim() &&
+        existingBoard.value.model === selectedModel.value.value
+      ) {
+        return false;
+      }
+
+      return name.value && name.value.length > 1 && selectedModel.value;
+    });
 
     function clear(): void {
       name.value = '';
@@ -54,7 +79,12 @@ export default defineComponent({
       try {
         const model = selectedModel.value.value;
         const numPins = selectedModel.value.numGpioPins;
-        await boardStore.addBoardWithPins(name.value, model, numPins);
+        if (existingBoard.value) {
+          await boardStore.updateBoard(existingBoard.value.id, name.value);
+        } else {
+          await boardStore.addBoardWithPins(name.value, model, numPins);
+        }
+
         clear();
         emit('boardAdded');
       } catch (error) {
@@ -84,11 +114,11 @@ export default defineComponent({
 <template>
   <div class="popup-add-board">
     <div class="popup">
-      <h3>Add New Board</h3>
+      <h3>{{ $props.boardId ? 'Edit Board' : 'Add New Board' }}</h3>
       <label for="name">Name:</label>
       <input v-model="name" type="text" placeholder="Enter board name" />
-      <label>Model:</label>
-      <div class="options">
+      <label v-if="!$props.boardId">Model:</label>
+      <div v-if="!$props.boardId" class="options">
         <div
           class="option"
           v-for="piModel in raspberryPiModels"
@@ -108,7 +138,7 @@ export default defineComponent({
       <div class="buttons">
         <button-default
           v-bind:class="{ 'can-save': canSave }"
-          v-bind:text="'Add'"
+          v-bind:text="$props.boardId ? 'Save' : 'Add'"
           v-on:click="onAdd"
         />
         <button-default v-bind:text="'Cancel'" v-on:click="onCancel" />

@@ -7,9 +7,10 @@ import PopupSelectRelay from '../components/popup -select-relay.vue';
 import { useRelayStore } from '../stores/relay-store';
 import { useRouter } from 'vue-router';
 import PopupYesNo from '../components/popup-yes-no.vue';
+import PopupAddBoard from '../components/popup-add-board.vue';
 
 export default defineComponent({
-  components: { PopupYesNo, PopupSelectRelay, DropDown },
+  components: { PopupAddBoard, PopupYesNo, PopupSelectRelay, DropDown },
   props: {},
   emits: [],
   setup(_props, _context) {
@@ -18,6 +19,7 @@ export default defineComponent({
     const relayStore = useRelayStore();
     const selectedPinConfig = ref<PinConfig>(null);
     const requestDeleteBoard = ref<boolean>(false);
+    const requestEditBoard = ref<boolean>(false);
 
     onMounted(async () => {
       selectedPinConfig.value = null;
@@ -149,6 +151,7 @@ export default defineComponent({
       modifiedAt,
       selectedPinConfig,
       requestDeleteBoard,
+      requestEditBoard,
       requestEditPinConfig,
       deleteBoard,
       onSaveSelectRelay,
@@ -161,7 +164,9 @@ export default defineComponent({
 <template>
   <div class="board">
     <div class="board-header">
-      <h3>{{ boardStore.selectedBoard?.name }}</h3>
+      <h3 v-on:click="requestEditBoard = true">
+        {{ boardStore.selectedBoard?.name }}
+      </h3>
       <p><strong>Model:</strong> {{ boardStore.selectedBoard?.model }}</p>
       <p><strong>Created:</strong> {{ createdAt }}</p>
       <p><strong>Modified:</strong> {{ modifiedAt }}</p>
@@ -208,6 +213,12 @@ export default defineComponent({
       v-bind:text="`Are you sure you want to delete '${boardStore.selectedBoard.name}'?`"
       v-on:yes="deleteBoard"
       v-on:no="requestDeleteBoard = false"
+    />
+    <popup-add-board
+      v-if="requestEditBoard"
+      v-bind:boardId="boardStore.selectedBoard.id"
+      v-on:boardAdded="requestEditBoard = false"
+      v-on:cancel="requestEditBoard = false"
     />
   </div>
 </template>
