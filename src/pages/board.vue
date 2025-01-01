@@ -9,9 +9,16 @@ import { useRelayStore } from '../stores/relay-store';
 import { useRouter } from 'vue-router';
 import PopupYesNo from '../components/popup-yes-no.vue';
 import PopupAddBoard from '../components/popup-add-board.vue';
+import PopupInfo from '../components/popup-info.vue';
 
 export default defineComponent({
-  components: { PopupAddBoard, PopupYesNo, PopupSelectRelay, DropDown },
+  components: {
+    PopupInfo,
+    PopupAddBoard,
+    PopupYesNo,
+    PopupSelectRelay,
+    DropDown,
+  },
   props: {},
   emits: [],
   setup(_props, _context) {
@@ -21,6 +28,7 @@ export default defineComponent({
     const selectedPinConfig = ref<PinConfig>(null);
     const requestDeleteBoard = ref<boolean>(false);
     const requestEditBoard = ref<boolean>(false);
+    const clipboardText = ref<string>(null);
 
     onMounted(async () => {
       selectedPinConfig.value = null;
@@ -139,6 +147,11 @@ export default defineComponent({
       selectedPinConfig.value = null;
     }
 
+    function copyToClipboard(text: string): void {
+      navigator.clipboard.writeText(text);
+      clipboardText.value = 'Copied to clipboard!';
+    }
+
     return {
       boardStore,
       createdAt,
@@ -146,10 +159,12 @@ export default defineComponent({
       selectedPinConfig,
       requestDeleteBoard,
       requestEditBoard,
+      clipboardText,
       requestEditPinConfig,
       deleteBoard,
       onSaveSelectRelay,
       onCancelSelectRelay,
+      copyToClipboard,
     };
   },
 });
@@ -161,7 +176,14 @@ export default defineComponent({
       <h3 v-on:click="requestEditBoard = true">
         {{ boardStore.selectedBoard?.name }}
       </h3>
-      <p><strong>Model:</strong> {{ boardStore.selectedBoard?.model }}</p>
+      <p v-on:click="copyToClipboard(boardStore.selectedBoard?.id)">
+        <strong>Board Id:</strong>
+        {{ boardStore.selectedBoard?.id }}
+      </p>
+
+      <p v-on:click="copyToClipboard(boardStore.selectedBoard?.model)">
+        <strong>Model:</strong> {{ boardStore.selectedBoard?.model }}
+      </p>
       <p><strong>Created:</strong> {{ createdAt }}</p>
       <p><strong>Modified:</strong> {{ modifiedAt }}</p>
     </div>
@@ -207,6 +229,11 @@ export default defineComponent({
       v-bind:text="`Are you sure you want to delete '${boardStore.selectedBoard.name}'?`"
       v-on:yes="deleteBoard"
       v-on:no="requestDeleteBoard = false"
+    />
+    <popup-info
+      v-if="clipboardText"
+      v-bind:text="clipboardText"
+      v-on:ok="clipboardText = null"
     />
     <popup-add-board
       v-if="requestEditBoard"
