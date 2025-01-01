@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent, PropType } from 'vue';
-import { Schedule } from '../types/schedule.ts';
+import { Schedule } from '../types/schedule';
 
 export default defineComponent({
   props: {

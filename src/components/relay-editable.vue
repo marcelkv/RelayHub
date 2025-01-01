@@ -1,8 +1,8 @@
 <script lang="ts">
 import ButtonDefault from './button-default.vue';
 import { defineComponent, onBeforeMount, PropType, ref } from 'vue';
-import { useRelayStore } from '../stores/relay-store.ts';
-import { Relay } from '../types/relay.ts';
+import { useRelayStore } from '../stores/relay-store';
+import { Relay } from '../types/relay';
 
 export default defineComponent({
   components: { ButtonDefault },

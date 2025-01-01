@@ -9,7 +9,7 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import app from '../../firebaseConfig.ts';
+import app from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 import { Schedule } from '../types/schedule';
 

@@ -11,7 +11,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { Relay } from '../types/relay';
-import app from '../../firebaseConfig.ts';
+import app from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
 
 const db = getFirestore(app);

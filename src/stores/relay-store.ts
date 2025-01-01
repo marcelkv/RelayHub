@@ -9,7 +9,7 @@ import {
   updateRelayStateFromDB,
   updateRelayConfigFromDB,
   onRelayStateChange,
-} from '../services/relay-service.ts';
+} from '../services/relay-service';
 
 export const useRelayStore = defineStore('relay', () => {
   const relays = ref<Relay[]>([]);

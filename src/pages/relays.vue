@@ -4,7 +4,7 @@ import Spinner from '../components/spinner.vue';
 import Relay from '../components/relay.vue';
 import ButtonDefault from '../components/button-default.vue';
 import SwipeableListItem from '../components/swipeable-list-item.vue';
-import { useRelayStore } from '../stores/relay-store.ts';
+import { useRelayStore } from '../stores/relay-store';
 import RelayEditable from '../components/relay-editable.vue';
 
 export default defineComponent({

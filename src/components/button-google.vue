@@ -1,8 +1,8 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import ButtonDefault from './button-default.vue';
-import { useUserStore } from '../stores/user-store.ts';
-import { signInWithGoogle } from '../services/auth-service.ts';
+import { useUserStore } from '../stores/user-store';
+import { signInWithGoogle } from '../services/auth-service';
 
 export default defineComponent({
   components: { ButtonDefault },

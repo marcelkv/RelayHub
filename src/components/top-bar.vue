@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { usePageStore } from '../stores/page-store.ts';
+import { usePageStore } from '../stores/page-store';
 import PageTitle from '../components/page-title.vue';
 import IconBack from '../icons/icon-back.vue';
 import { useRouter } from 'vue-router';

@@ -5,8 +5,8 @@ import Spinner from '../components/spinner.vue';
 import ButtonDefault from '../components/button-default.vue';
 import Dropdown from '../components/drop-down.vue';
 import { useRouter } from 'vue-router';
-import { Board } from '../types/board.ts';
-import { usePageStore } from '../stores/page-store.ts';
+import { Board } from '../types/board';
+import { usePageStore } from '../stores/page-store';
 import PopupAddBoard from '../components/popup-add-board.vue';
 
 export default defineComponent({

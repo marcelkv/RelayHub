@@ -7,7 +7,7 @@ import {
   raspberryPiModels,
 } from '../resources/raspberry-pi-models';
 import { useBoardStore } from '../stores/board-store';
-import Board from '../pages/board.vue';
+import { Board } from '../types/board';
 
 export default defineComponent({
   components: { Dropdown, ButtonDefault },
@@ -47,7 +47,7 @@ export default defineComponent({
         return false;
       }
 
-      return name.value && name.value.length > 1 && selectedModel.value;
+      return !!(name.value && name.value.length > 1 && selectedModel.value);
     });
 
     function clear(): void {
@@ -88,7 +88,7 @@ export default defineComponent({
         clear();
         emit('boardAdded');
       } catch (error) {
-        errorMessage.value = 'Failed to add the board. Please try again.';
+        console.error('Failed to add the board. Please try again.');
       }
     }
 

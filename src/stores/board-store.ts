@@ -10,9 +10,10 @@ import {
   updatePinConfigModeAndRelayInDB,
 } from '../services/board-service';
 
-import { Board } from '../types/board.ts';
-import { PinConfig } from '../types/pin-config.ts';
-import { useRelayStore } from './relay-store.ts';
+import { Board } from '../types/board';
+import { PinConfig } from '../types/pin-config';
+import { Relay } from '../types/relay';
+import { useRelayStore } from './relay-store';
 
 export const useBoardStore = defineStore('board', () => {
   const boards = ref<Board[]>([]);
@@ -148,7 +149,6 @@ export const useBoardStore = defineStore('board', () => {
       }
     } catch (error) {
       console.error('Failed to delete board:', error);
-      error.value = 'Unable to delete board.';
     }
   };
 

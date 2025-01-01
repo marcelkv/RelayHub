@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc --noEmit && vite build",
     "serve": "vite preview",
     "format": "prettier --write .",
     "deploy": "vite build && gh-pages -d dist"
@@ -26,6 +26,6 @@
     "prettier-plugin-vue": "^1.1.6",
     "typescript": "^5.7.2",
     "vite": "^6.0.3",
-    "vue-tsc": "^2.1.10"
+    "vue-tsc": "^2.2.0"
   }
 }

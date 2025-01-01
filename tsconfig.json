@@ -1,18 +1,20 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
-
   "compilerOptions": {
-    "strictNullChecks": false,
-    "strict": false,
-    "target": "esnext",
-    "module": "esnext",
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "skipLibCheck": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "ES2021",
+    "module": "ES2022",
+    "jsx": "preserve",
     "moduleResolution": "node",
-    "skipLibCheck": true
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*.ts", "src/**/*.vue"],
+  "exclude": ["node_modules", "wwwroot"],
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ]
 }

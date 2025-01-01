@@ -10,7 +10,7 @@ import {
 } from 'vue';
 import { Relay } from '../types/relay';
 import ToggleButton from './toggle-button.vue';
-import { useRelayStore } from '../stores/relay-store.ts';
+import { useRelayStore } from '../stores/relay-store';
 
 export default defineComponent({
   components: { ToggleButton },

@@ -1,7 +1,8 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue';
-import { useBoardStore } from '../stores/board-store.ts';
+import { useBoardStore } from '../stores/board-store';
 import { PinConfig } from '../types/pin-config';
+import { Relay } from '../types/relay';
 import DropDown from '../components/drop-down.vue';
 import PopupSelectRelay from '../components/popup -select-relay.vue';
 import { useRelayStore } from '../stores/relay-store';

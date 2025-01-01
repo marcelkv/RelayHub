@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue';
-import { useScheduleStore } from '../stores/schedule-store.ts';
+import { useScheduleStore } from '../stores/schedule-store';
 import Spinner from '../components/spinner.vue';
 import Schedule from '../components/schedule.vue';
 

@@ -6,7 +6,7 @@ import {
   addScheduleToDB,
   updateScheduleInDB,
   deleteScheduleFromDB,
-} from '../services/schedule-service.ts';
+} from '../services/schedule-service';
 
 export const useScheduleStore = defineStore('schedule', () => {
   const schedules = ref<Schedule[]>([]);

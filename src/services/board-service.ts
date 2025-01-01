@@ -9,10 +9,11 @@ import {
   writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
-import app from '../../firebaseConfig.ts';
+import app from '../../firebaseConfig';
 import { getAuth } from 'firebase/auth';
-import { Board } from '../types/board.ts';
-import { PinConfig } from '../types/pin-config.ts';
+import { Board } from '../types/board';
+import { PinConfig } from '../types/pin-config';
+import { Relay } from '../types/relay';
 
 const db = getFirestore(app);
 const boardsCollection = collection(db, 'boards');
@@ -200,8 +201,8 @@ export async function updatePinConfigModeAndRelayInDB(
 
   batch.update(pinConfigRef, {
     mode: pinConfig.mode,
-    relayName: pinConfig.relayName,
-    relayId: pinConfig.relayId,
+    relayName: pinConfig.relayName ?? null,
+    relayId: pinConfig.relayId ?? null,
   });
 
   relays.forEach(relay => {

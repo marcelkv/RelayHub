@@ -1,12 +1,12 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import Relays from './pages/relays.vue';
 import Schedules from './pages/schedules.vue';
-import { usePageStore } from './stores/page-store.ts';
+import { usePageStore } from './stores/page-store';
 import Home from './pages/home.vue';
 import Boards from './pages/boards.vue';
 import Board from './pages/board.vue';
 
-const routes = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/home',
     name: 'home',

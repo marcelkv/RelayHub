@@ -1,13 +1,7 @@
 <script lang="ts">
 import ButtonDefault from './button-default.vue';
-import {
-  computed,
-  defineComponent,
-  onMounted,
-  ref,
-} from 'vue';
+import { computed, defineComponent, onMounted, ref } from 'vue';
 import { useRelayStore } from '../stores/relay-store';
-import Relay from './relay.vue';
 
 export default defineComponent({
   components: { ButtonDefault },
@@ -22,7 +16,7 @@ export default defineComponent({
     const relayStore = useRelayStore();
     const mode = ref<string>(props.initialMode);
     const relayId = ref<string>(props.initialRelayId);
-    const availableRelays = ref<Relay[]>([]);
+    const availableRelays = ref<{ value: string; label: string }[]>([]);
 
     onMounted(() => {
       availableRelays.value = getAvailableRelays();
@@ -40,7 +34,10 @@ export default defineComponent({
         .map(({ id, name }) => ({ value: id, label: name }))
         .sort((a, b) => a.value.localeCompare(b.value));
 
-      const firstElement = { value: null, label: 'None' };
+      const firstElement: { value: string; label: string } = {
+        value: null,
+        label: 'None',
+      };
 
       if (relayId.value !== null) {
         const relay = relayStore.relays.find(
@@ -66,7 +63,7 @@ export default defineComponent({
       mode.value = 'output';
     }
 
-    function setRelay(newRelayId): void {
+    function setRelay(newRelayId: string): void {
       relayId.value = newRelayId;
     }
 
