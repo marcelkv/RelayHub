@@ -71,74 +71,67 @@ export default defineComponent({
       mode: string,
       relayId: string
     ): Promise<void> {
-      if (!mode || !relayId) {
+      if (!selectedPinConfig.value) {
+        return;
+      }
+
+      if (!mode) {
         onCancelSelectRelay();
         return;
       }
 
-      const pinConfig = boardStore.pinConfigs.find(
-        pinConfig => pinConfig === selectedPinConfig.value
-      );
-
-      if (!pinConfig) {
-        onCancelSelectRelay();
-        return;
-      }
-
+      const pinConfig = selectedPinConfig.value;
       const relaysToUpdate: Relay[] = [];
+      pinConfig.mode = mode;
 
-      if (pinConfig.relayId && selectedPinConfig.value.relayId !== relayId) {
-        const initialRelay = relayStore.relays.find(
-          r => r.id === pinConfig.relayId
-        );
-        const newRelay =
-          relayId === 'none'
-            ? null
-            : relayStore.relays.find(r => r.id === relayId);
-
-        if (!initialRelay) {
-          onCancelSelectRelay();
-          return;
-        }
-
-        initialRelay.boardId = null;
-
+      // Case 1: No relay previously assigned, assigning a new relay
+      if (!pinConfig.relayId && relayId) {
+        const newRelay = relayStore.relays.find(relay => relay.id === relayId);
         if (newRelay) {
-          newRelay.boardId = pinConfig.boardId;
           pinConfig.relayId = newRelay.id;
           pinConfig.relayName = newRelay.name;
-        } else {
-          pinConfig.relayId = null;
-          pinConfig.relayName = null;
+          newRelay.boardId = pinConfig.id; // Assign the pinConfig ID to the relay
+          relaysToUpdate.push(newRelay);
         }
-
-        relaysToUpdate.push(initialRelay);
-        relaysToUpdate.push(newRelay);
-      } else if (pinConfig.relayId) {
-        pinConfig.mode = mode;
-      } else if (relayId === 'none') {
-        pinConfig.relayId = null;
-        pinConfig.relayName = null;
-      } else {
-        const newRelay =
-          relayId === 'none'
-            ? null
-            : relayStore.relays.find(r => r.id === relayId);
-
-        if (!newRelay) {
-          onCancelSelectRelay();
-          return;
-        }
-
-        newRelay.boardId = pinConfig.boardId;
-        pinConfig.relayId = newRelay.id;
-        pinConfig.relayName = newRelay.name;
-        relaysToUpdate.push(newRelay);
       }
 
-      pinConfig.mode = mode;
+      // Case 2: Relay assigned, switching to a new relay
+      else if (pinConfig.relayId && relayId && pinConfig.relayId !== relayId) {
+        const oldRelay = relayStore.relays.find(
+          relay => relay.id === pinConfig.relayId
+        );
+        const newRelay = relayStore.relays.find(relay => relay.id === relayId);
+
+        if (oldRelay) {
+          oldRelay.boardId = null; // Unassign the old relay
+          relaysToUpdate.push(oldRelay);
+        }
+
+        if (newRelay) {
+          pinConfig.relayId = newRelay.id;
+          pinConfig.relayName = newRelay.name;
+          newRelay.boardId = pinConfig.id; // Assign the pinConfig ID to the new relay
+          relaysToUpdate.push(newRelay);
+        }
+      }
+
+      // Case 3: Relay assigned, now set to null
+      else if (pinConfig.relayId && !relayId) {
+        const oldRelay = relayStore.relays.find(
+          relay => relay.id === pinConfig.relayId
+        );
+
+        if (oldRelay) {
+          oldRelay.boardId = null; // Unassign the old relay
+          relaysToUpdate.push(oldRelay);
+        }
+
+        pinConfig.relayId = null;
+        pinConfig.relayName = null;
+      }
+
       await boardStore.updatePinConfigAndRelays(pinConfig, relaysToUpdate);
-      onCancelSelectRelay();
+      selectedPinConfig.value = null;
     }
 
     function onCancelSelectRelay(): void {
@@ -201,7 +194,7 @@ export default defineComponent({
     </div>
     <popup-select-relay
       v-if="selectedPinConfig"
-      v-bind:relayName="boardStore.selectedBoard?.name"
+      v-bind:relayName="boardStore.selectedBoard.name"
       v-bind:pinNumber="selectedPinConfig.pinNumber"
       v-bind:initialMode="selectedPinConfig.mode"
       v-bind:initialRelayId="selectedPinConfig.relayId"
@@ -249,7 +242,6 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border: 1px solid lightblue;
 }
 
 .table-row {

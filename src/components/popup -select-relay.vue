@@ -1,6 +1,11 @@
 <script lang="ts">
 import ButtonDefault from './button-default.vue';
-import { computed, defineComponent, onMounted, ref, watch } from 'vue';
+import {
+  computed,
+  defineComponent,
+  onMounted,
+  ref,
+} from 'vue';
 import { useRelayStore } from '../stores/relay-store';
 import Relay from './relay.vue';
 
@@ -10,7 +15,7 @@ export default defineComponent({
     relayName: { type: String, required: true },
     pinNumber: { type: Number, required: true },
     initialMode: { type: String, required: true },
-    initialRelayId: { type: String, default: 'none' },
+    initialRelayId: { type: String, default: null },
   },
   emits: ['save', 'cancel'],
   setup(props, { emit }) {
@@ -35,9 +40,9 @@ export default defineComponent({
         .map(({ id, name }) => ({ value: id, label: name }))
         .sort((a, b) => a.value.localeCompare(b.value));
 
-      const firstElement = { value: 'none', label: 'None' };
+      const firstElement = { value: null, label: 'None' };
 
-      if (relayId.value !== 'none') {
+      if (relayId.value !== null) {
         const relay = relayStore.relays.find(
           relay => relay.id === relayId.value
         );
@@ -76,13 +81,6 @@ export default defineComponent({
     function onCancel(): void {
       emit('cancel');
     }
-
-    watch(
-      () => relayId.value,
-      () => {
-        console.log('RelayId: ' + relayId.value);
-      }
-    );
 
     return {
       mode,
