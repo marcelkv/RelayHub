@@ -8,6 +8,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "serve": "vite preview",
     "format": "prettier --write .",
+    "typecheck": "vue-tsc --noEmit",
     "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
