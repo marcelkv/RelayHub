@@ -51,6 +51,12 @@ export default defineComponent({
       }
     }
 
+    function onRelayAdded(): void {
+      filterText.value = '';
+      onFilterChanged();
+      requestAddNewRelay.value = false;
+    }
+
     watch(() => filterText.value, onFilterChanged);
 
     return {
@@ -61,6 +67,7 @@ export default defineComponent({
       editableRelayId,
       filterText,
       currentRelays,
+      onRelayAdded,
     };
   },
 });
@@ -92,7 +99,7 @@ export default defineComponent({
     </div>
     <popup-add-relay
       v-if="requestAddNewRelay"
-      v-on:relayAdded="requestAddNewRelay = false"
+      v-on:relayAdded="onRelayAdded"
       v-on:cancel="requestAddNewRelay = false"
     />
   </div>
