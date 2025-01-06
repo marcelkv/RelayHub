@@ -62,11 +62,12 @@ export const useRelayStore = defineStore('relay', () => {
     }
   };
 
-  const addRelay = async (newRelay: Partial<Relay>) => {
+  const addRelay = async (newRelay: Partial<Relay>): Promise<Relay> => {
     try {
       const addedRelay = await addRelayToDB(newRelay);
       relays.value.push(addedRelay);
       setupRelayListener(addedRelay.id);
+      return addedRelay;
     } catch (err) {
       console.error('Failed to add relay:', err);
     }

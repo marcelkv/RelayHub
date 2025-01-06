@@ -1,7 +1,6 @@
 <script lang="ts">
 import { defineComponent, onBeforeMount, computed, ref } from 'vue';
 import ButtonDefault from './button-default.vue';
-import Dropdown from './drop-down.vue';
 import {
   RaspberryPiModel,
   raspberryPiModels,
@@ -10,7 +9,7 @@ import { useBoardStore } from '../stores/board-store';
 import { Board } from '../types/board';
 
 export default defineComponent({
-  components: { Dropdown, ButtonDefault },
+  components: { ButtonDefault },
   emits: ['boardAdded', 'cancel'],
   props: {
     boardId: { type: String, default: null },
@@ -138,7 +137,7 @@ export default defineComponent({
       <div class="buttons">
         <button-default
           v-bind:class="{ 'can-save': canSave }"
-          v-bind:text="$props.boardId ? 'Save' : 'Add'"
+          v-bind:text="'Save'"
           v-on:click="onAdd"
         />
         <button-default v-bind:text="'Cancel'" v-on:click="onCancel" />
