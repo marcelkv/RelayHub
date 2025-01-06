@@ -10,6 +10,7 @@ export const usePageStore = defineStore('page', () => {
     boards: 'Boards',
     board: 'Board',
     relays: 'Relay Control',
+    relay: 'Relay',
     schedules: 'Task Schedules',
   };
 

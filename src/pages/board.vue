@@ -99,7 +99,7 @@ export default defineComponent({
         if (newRelay) {
           pinConfig.relayId = newRelay.id;
           pinConfig.relayName = newRelay.name;
-          newRelay.boardId = pinConfig.id; // Assign the pinConfig ID to the relay
+          newRelay.boardId = pinConfig.boardId;
           relaysToUpdate.push(newRelay);
         }
       }
@@ -119,7 +119,7 @@ export default defineComponent({
         if (newRelay) {
           pinConfig.relayId = newRelay.id;
           pinConfig.relayName = newRelay.name;
-          newRelay.boardId = pinConfig.id; // Assign the pinConfig ID to the new relay
+          newRelay.boardId = pinConfig.boardId;
           relaysToUpdate.push(newRelay);
         }
       }
@@ -249,72 +249,72 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   flex: 1;
-}
 
-.board-header {
-  padding: 16px;
-  border-bottom: 1px solid lightblue;
-}
-
-.table-header {
-  display: flex;
-  border-bottom: 1px solid lightblue;
-  position: sticky;
-  background-color: black;
-  top: 0;
-  z-index: 10;
-}
-
-.table-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.table-row {
-  display: flex;
-  border-bottom: 1px solid lightblue;
-  height: 50px;
-  align-items: center;
-}
-
-.table-cell {
-  flex: 1;
-  padding: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: center;
-
-  &.relay-name {
-    text-align: left;
+  .board-header {
+    padding: 16px;
+    border-bottom: 1px solid lightblue;
   }
-}
 
-.table-cell:nth-child(1) {
-  flex: 0 0 30px;
-}
+  .table-header {
+    display: flex;
+    border-bottom: 1px solid lightblue;
+    position: sticky;
+    background-color: black;
+    top: 0;
+    z-index: 10;
+  }
 
-.table-cell:nth-child(2) {
-  flex: 0 0 60px;
-}
+  .table-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
 
-.table-cell:nth-child(3) {
-  flex: 1;
-}
+  .table-row {
+    display: flex;
+    border-bottom: 1px solid lightblue;
+    height: 50px;
+    align-items: center;
+  }
 
-.delete-button {
-  color: red;
-  border: none;
-  padding: 8px 16px;
-  cursor: pointer;
-  margin: 20px;
-  width: 100%;
-  text-align: center;
-}
+  .table-cell {
+    flex: 1;
+    padding: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
 
-.delete-button:hover {
-  background-color: darkred;
+    &.relay-name {
+      text-align: left;
+    }
+  }
+
+  .table-cell:nth-child(1) {
+    flex: 0 0 30px;
+  }
+
+  .table-cell:nth-child(2) {
+    flex: 0 0 60px;
+  }
+
+  .table-cell:nth-child(3) {
+    flex: 1;
+  }
+
+  .delete-button {
+    color: red;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin: 20px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .delete-button:hover {
+    background-color: darkred;
+  }
 }
 </style>

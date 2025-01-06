@@ -10,6 +10,7 @@ import TopBar from './components/top-bar.vue';
 import Home from './pages/home.vue';
 import Boards from './pages/boards.vue';
 import Board from './pages/board.vue';
+import Relay from './pages/relay.vue';
 
 export default defineComponent({
   name: 'App',
@@ -20,6 +21,7 @@ export default defineComponent({
     TopBar,
     Schedules,
     Relays,
+    Relay,
     TaskBar,
     SignIn,
   },
@@ -62,6 +64,7 @@ export default defineComponent({
           v-if="pageStore.currentPage === 'relays'"
           v-on:requestScrollToBottom="scrollToBottom"
         />
+        <relay v-if="pageStore.currentPage === 'relay'" />
         <schedules
           v-else-if="pageStore.currentPage === 'schedules'"
           v-on:requestScrollToBottom="scrollToBottom"

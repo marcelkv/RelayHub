@@ -2,9 +2,9 @@ import {
   getFirestore,
   collection,
   getDocs,
-  deleteDoc,
   query,
   where,
+  writeBatch,
   addDoc,
   updateDoc,
   doc,
@@ -16,6 +16,7 @@ import { getAuth } from 'firebase/auth';
 
 const db = getFirestore(app);
 const relaysCollection = collection(db, 'relays');
+const pinConfigsCollection = collection(db, 'pinConfigs');
 
 export async function fetchRelays(): Promise<Relay[]> {
   const auth = getAuth(app);
@@ -103,8 +104,29 @@ export async function deleteRelayFromDB(id: string): Promise<void> {
     throw new Error('User is not authenticated');
   }
 
+  const batch = writeBatch(db);
   const relayDoc = doc(db, 'relays', id);
-  await deleteDoc(relayDoc);
+
+  const pinConfigQuery = query(
+    pinConfigsCollection,
+    where('relayId', '==', id),
+    where('uid', '==', user.uid)
+  );
+
+  const pinConfigSnapshot = await getDocs(pinConfigQuery);
+
+  if (!pinConfigSnapshot.empty) {
+    const pinConfigDoc = pinConfigSnapshot.docs[0];
+    const pinConfigRef = doc(db, 'pinConfigs', pinConfigDoc.id);
+    batch.update(pinConfigRef, {
+      relayId: null,
+      relayName: null,
+      mode: 'input',
+    });
+  }
+
+  batch.delete(relayDoc);
+  await batch.commit();
 }
 
 export async function isRelayNameUniqueInDB(name: string): Promise<boolean> {

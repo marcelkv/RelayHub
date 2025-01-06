@@ -13,6 +13,7 @@ import {
 
 export const useRelayStore = defineStore('relay', () => {
   const relays = ref<Relay[]>([]);
+  const selectedRelay = ref<Relay>();
   const loading = ref(false);
   const error = ref<string | null>(null);
   const listeners = ref<Record<string, () => void>>({});
@@ -44,6 +45,10 @@ export const useRelayStore = defineStore('relay', () => {
       if (relay) {
         relay.name = newName;
         relay.maxOnTime_s = newMaxOnTime;
+
+        if (selectedRelay.value.id === relay.id) {
+          selectedRelay.value = relay;
+        }
       }
     } catch (err) {
       console.error('Failed to update relay config:', err);
@@ -75,9 +80,12 @@ export const useRelayStore = defineStore('relay', () => {
 
   const deleteRelay = async (id: string) => {
     try {
+      unsubscribeRelayListener(id);
       await deleteRelayFromDB(id);
       relays.value = relays.value.filter(relay => relay.id !== id);
-      unsubscribeRelayListener(id);
+      if (selectedRelay.value.id === id) {
+        selectedRelay.value = null;
+      }
     } catch (err) {
       console.error('Failed to delete relay:', err);
     }
@@ -137,6 +145,7 @@ export const useRelayStore = defineStore('relay', () => {
 
   return {
     relays,
+    selectedRelay,
     loading,
     error,
     loadRelays,

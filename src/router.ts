@@ -5,6 +5,7 @@ import { usePageStore } from './stores/page-store';
 import Home from './pages/home.vue';
 import Boards from './pages/boards.vue';
 import Board from './pages/board.vue';
+import Relay from './pages/relay.vue';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -26,6 +27,11 @@ const routes: RouteRecordRaw[] = [
     path: '/relays',
     name: 'relays',
     component: Relays,
+  },
+  {
+    path: '/relay',
+    name: 'relay',
+    component: Relay,
   },
   {
     path: '/schedules',

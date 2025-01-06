@@ -11,6 +11,8 @@ import {
 import { Relay } from '../types/relay';
 import ToggleButton from './toggle-button.vue';
 import { useRelayStore } from '../stores/relay-store';
+import { useRouter } from 'vue-router';
+import { usePageStore } from '../stores/page-store';
 
 export default defineComponent({
   components: { ToggleButton },
@@ -18,6 +20,8 @@ export default defineComponent({
     relay: { type: Object as PropType<Relay>, required: true },
   },
   setup(props) {
+    const pageStore = usePageStore();
+    const router = useRouter();
     const relayStore = useRelayStore();
     const countDownSeconds = ref(0);
     let timeoutId: NodeJS.Timeout;
@@ -128,16 +132,22 @@ export default defineComponent({
       countDown();
     }
 
+    function onRelayClicked(): void {
+      relayStore.selectedRelay = props.relay;
+      pageStore.setNavigateBackPage('relays');
+      router.push({ name: 'relay' });
+    }
+
     watch(() => props.relay.turnedOnAt, onTurnedOnAtChanged);
 
-    return { displayName, isBlocked, handleToggle };
+    return { displayName, isBlocked, onRelayClicked, handleToggle };
   },
 });
 </script>
 
 <template>
   <div class="relay">
-    <div class="name">{{ displayName }}</div>
+    <div class="name" v-on:click="onRelayClicked">{{ displayName }}</div>
     <toggle-button
       v-bind:modelValue="$props.relay.state"
       v-bind:isBlocked="isBlocked"

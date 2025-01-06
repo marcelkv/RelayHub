@@ -1,19 +1,30 @@
 <script lang="ts">
-import { defineComponent, computed, ref, onMounted, watch } from 'vue';
+import {
+  defineComponent,
+  computed,
+  ref,
+  watch,
+  PropType,
+  onBeforeMount,
+} from 'vue';
 import ButtonDefault from './button-default.vue';
 import { useBoardStore } from '../stores/board-store';
 import { useRelayStore } from '../stores/relay-store';
 import { Board } from '../types/board';
 import { PinConfig } from '../types/pin-config';
+import { Relay } from '../types/relay';
 
 export default defineComponent({
   components: { ButtonDefault },
   emits: ['relayAdded', 'cancel'],
-  props: {},
-  setup(_props, { emit }) {
+  props: {
+    relay: { type: Object as PropType<Relay>, default: null },
+  },
+  setup(props, { emit }) {
     const boardStore = useBoardStore();
     const relayStore = useRelayStore();
     const isNameValid = ref<boolean>(false);
+    const isMaxOnTimeValid = ref<boolean>(true);
     const name = ref<string>('');
     const maxOnTime = ref<string>('');
     const selectedBoard = ref<Board>(null);
@@ -22,19 +33,34 @@ export default defineComponent({
     const availablePins = ref<{ value: PinConfig; label: number }[]>([]);
     const showAdvancedSettings = ref<boolean>(false);
     const showMoreAdvancedSettings = ref<boolean>(false);
+    const initialMaxOnTime = ref<string>();
 
-    onMounted(() => {
+    onBeforeMount(() => {
+      if (props.relay) {
+        name.value = props.relay.name;
+        isNameValid.value = true;
+        initialMaxOnTime.value = relayStore.getMaxOnTime(props.relay).trim();
+        maxOnTime.value = initialMaxOnTime.value;
+      }
       availableBoards.value = getAvailableBoards();
     });
 
     const canSave = computed<boolean>(() => {
-      if (!isNameValid.value || !validateMaxOnTime()) {
+      if (!isNameValid.value || !isMaxOnTimeValid.value) {
         return false;
+      }
+
+      if (props.relay) {
+        return (
+          name.value.trim() !== props.relay.name.trim() ||
+          maxOnTime.value.trim() !== initialMaxOnTime.value
+        );
       }
 
       if (selectedBoard.value) {
         return !!selectedPin.value;
       }
+
       return true;
     });
 
@@ -47,19 +73,27 @@ export default defineComponent({
 
       const totalSeconds = timeStringToSeconds();
       try {
-        const newRelay = await relayStore.addRelay({
-          name: name.value.trim(),
-          state: false,
-          maxOnTime_s: totalSeconds,
-        });
+        if (props.relay) {
+          await relayStore.updateRelayConfig(
+            props.relay.id,
+            name.value.trim(),
+            totalSeconds
+          );
+        } else {
+          const newRelay = await relayStore.addRelay({
+            name: name.value.trim(),
+            state: false,
+            maxOnTime_s: totalSeconds,
+          });
 
-        if (selectedBoard.value) {
-          newRelay.boardId = selectedBoard.value.id;
-          selectedPin.value.relayId = newRelay.id;
-          selectedPin.value.relayName = newRelay.name;
-          await boardStore.updatePinConfigAndRelays(selectedPin.value, [
-            newRelay,
-          ]);
+          if (selectedBoard.value) {
+            newRelay.boardId = selectedBoard.value.id;
+            selectedPin.value.relayId = newRelay.id;
+            selectedPin.value.relayName = newRelay.name;
+            await boardStore.updatePinConfigAndRelays(selectedPin.value, [
+              newRelay,
+            ]);
+          }
         }
       } finally {
         emit('relayAdded');
@@ -121,12 +155,18 @@ export default defineComponent({
       isNameValid.value = await validateName();
     }
 
+    async function onMaxOnTimeChanged(): Promise<void> {
+      isMaxOnTimeValid.value = validateMaxOnTime();
+    }
+
     async function validateName(): Promise<boolean> {
       if (name.value.trim().length < 2) {
         return false;
       }
 
-      return await relayStore.isRelayNameUnique(name.value.trim());
+      return props.relay && props.relay.name === name.value.trim()
+        ? true
+        : await relayStore.isRelayNameUnique(name.value.trim());
     }
 
     function validateMaxOnTime(): boolean {
@@ -141,6 +181,7 @@ export default defineComponent({
     }
 
     watch(() => name.value, onNameChanged);
+    watch(() => maxOnTime.value, onMaxOnTimeChanged);
 
     return {
       name,
@@ -165,19 +206,22 @@ export default defineComponent({
 <template>
   <div class="popup-add-relay">
     <div class="popup">
-      <h3>Add New Relay</h3>
+      <h3>{{ $props.relay ? 'Edit Relay' : 'Add New Relay' }}</h3>
       <label for="name">Name:</label>
       <input v-model="name" type="text" placeholder="Enter relay name" />
       <label
         class="settings-toggle"
-        v-if="showAdvancedSettings"
+        v-if="!$props.relay && showAdvancedSettings"
         v-on:click="showAdvancedSettings = false"
         >Hide advanced settings</label
       >
-      <label class="settings-toggle" v-else v-on:click="onShowAdvancedSettings"
+      <label
+        class="settings-toggle"
+        v-else-if="!$props.relay"
+        v-on:click="onShowAdvancedSettings"
         >Show advanced settings</label
       >
-      <div v-if="showAdvancedSettings">
+      <div v-if="showAdvancedSettings || $props.relay">
         <label>Max on time:</label>
         <input
           v-model="maxOnTime"
@@ -186,17 +230,19 @@ export default defineComponent({
         />
         <label
           class="settings-toggle"
-          v-if="showAdvancedSettings && showMoreAdvancedSettings"
+          v-if="
+            !$props.relay && showAdvancedSettings && showMoreAdvancedSettings
+          "
           v-on:click="showMoreAdvancedSettings = false"
           >Hide more advanced settings</label
         >
         <label
           class="settings-toggle"
-          v-else-if="showAdvancedSettings"
+          v-else-if="!$props.relay && showAdvancedSettings"
           v-on:click="onShowMoreAdvancedSettings"
           >Show more advanced settings</label
         >
-        <div v-if="showMoreAdvancedSettings">
+        <div v-if="!$props.relay && showMoreAdvancedSettings">
           <label>Board:</label>
           <div class="options">
             <div
