@@ -104,7 +104,11 @@ export default defineComponent({
         {{ relayStore.selectedRelay.state ? 'On' : 'Off' }}
       </p>
     </div>
-    <div class="delete-button" v-on:click="requestDeleteRelay = true">
+    <div
+      v-if="!relayStore.selectedRelay.state"
+      class="delete-button"
+      v-on:click="requestDeleteRelay = true"
+    >
       Delete
     </div>
     <popup-yes-no

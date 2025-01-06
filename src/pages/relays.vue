@@ -32,9 +32,9 @@ export default defineComponent({
     const filterText = ref<string>('');
     const currentRelays = ref<Relay[]>([]);
 
-    onMounted(() => {
+    onMounted(async () => {
       requestAddNewRelay.value = false;
-      relayStore.loadRelays();
+      await relayStore.loadRelays();
       currentRelays.value = relayStore.relays;
       filterText.value = '';
     });
